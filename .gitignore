@@ -1,0 +1,16 @@
+# MATLAB
+*.asv
+*.m~
+*.mex*
+slprj/
+codegen/
+
+# macOS
+.DS_Store
+
+# Papers are copyrighted and must not be redistributed
+*.pdf
+
+# Local exports
+combined_ear_response.csv
+combined_ear_plot.png
