@@ -9,7 +9,8 @@
 
   let REF = null, P1 = null, P2 = null, D1 = null, D2 = null;
   let baseline = null;
-  const F = Combined.logspace(20, 20000, 1024);
+  const F = Combined.logspace(20, 20000, 1024);      // plotting
+  const FNUM = Combined.logspace(20, 20000, 4096);   // reported numbers
   const plots = {};
   const vis = { outer: true, middle: true, combined: true, base: true };
   const player = new EarAudio.Player();
@@ -271,11 +272,22 @@
     drawReadout();
   }
 
-  function at(arr, f0, fn) {
-    let bi = 0, bd = Infinity;
-    for (let i = 0; i < F.length; i++) { const d = Math.abs(Math.log10(F[i]) - Math.log10(f0)); if (d < bd) { bd = d; bi = i; } }
-    return fn(arr[bi], bi);
+  /* Value of fn(arr) at an arbitrary frequency, by LINEAR INTERPOLATION in f
+   * of the transformed values — the same thing MATLAB's
+   * interp1(f, dbv(x), f0) does. Taking the nearest grid point instead was
+   * wrong by a factor of four for E2 at 4 kHz, where the curve moves fast.
+   * `grid` defaults to the plotting grid; the reported numbers use FNUM. */
+  function atOn(grid, arr, f0, fn) {
+    const n = grid.length;
+    if (f0 <= grid[0]) return fn(arr[0], 0);
+    if (f0 >= grid[n - 1]) return fn(arr[n - 1], n - 1);
+    let lo = 0, hi = n - 1;
+    while (hi - lo > 1) { const m = (lo + hi) >> 1; if (grid[m] <= f0) lo = m; else hi = m; }
+    const y0 = fn(arr[lo], lo), y1 = fn(arr[hi], hi);
+    const t = (f0 - grid[lo]) / (grid[hi] - grid[lo]);
+    return y0 + t * (y1 - y0);
   }
+  function at(arr, f0, fn) { return atOn(F, arr, f0, fn); }
 
   function drawReadout() {
     const m = cur.middle;
@@ -497,10 +509,11 @@
   // student's own. Marked in the record and in the export so a demo run is
   // never mistaken for the student's experiment.
   function runExperiment(id, def, el, isDemo) {
-    const before = Combined.response(P1, P2, F);
+    // Reported numbers use the dense grid so they match MATLAB exactly.
+    const before = Combined.response(P1, P2, FNUM);
     const q2 = JSON.parse(JSON.stringify(P2));
     q2[def.param] = q2[def.param] * def.factor;
-    const after = Combined.response(P1, q2, F);
+    const after = Combined.response(P1, q2, FNUM);
 
     // Is the run starting from the published defaults, or from parameters the
     // student has already moved? An experiment is only comparable with the
@@ -513,7 +526,8 @@
       if (typeof D1[k] === 'number' && Math.abs(P1[k] - D1[k]) > Math.abs(D1[k]) * 1e-9)
         drift.push(k);
     const fs = [100, 500, 1000, 2000, 4000, 10000];
-    const dH = fs.map(f0 => +(at(after.Hmiddle, f0, C.db) - at(before.Hmiddle, f0, C.db)).toFixed(3));
+    const dH = fs.map(f0 => +(atOn(FNUM, after.Hmiddle, f0, C.db) -
+                              atOn(FNUM, before.Hmiddle, f0, C.db)).toFixed(3));
     const res = {
       param: def.param, factor: def.factor, ranAt: new Date().toISOString(),
       baselineValue: P2[def.param], newValue: q2[def.param],
@@ -567,7 +581,7 @@
    * not labelled as, the student's observation. Each claim is checked against
    * a number rather than asserted. */
   function checkReference(id, r, before, after) {
-    const d  = (f0) => at(after.Hmiddle, f0, C.db) - at(before.Hmiddle, f0, C.db);
+    const d  = (f0) => atOn(FNUM, after.Hmiddle, f0, C.db) - atOn(FNUM, before.Hmiddle, f0, C.db);
     const pk = (r.fPeakAfter - r.fPeakBefore) / r.fPeakBefore * 100;
     const out = [];
     const line = (ok, txt) => out.push((ok === null ? '•' : ok ? '✓' : '✗') + ' ' + txt);
@@ -848,9 +862,10 @@
     html += R.experiments.map(e => {
       const q2 = JSON.parse(JSON.stringify(D2));
       q2[e.param] = D2[e.param] * e.factor;
-      const before = MiddleEar.response(D2, F);
-      const after  = MiddleEar.response(q2, F);
-      const dH = fs.map(f0 => at(after.total, f0, C.db) - at(before.total, f0, C.db));
+      const before = MiddleEar.response(D2, FNUM);
+      const after  = MiddleEar.response(q2, FNUM);
+      const dH = fs.map(f0 => atOn(FNUM, after.total, f0, C.db) -
+                              atOn(FNUM, before.total, f0, C.db));
 
       let extra = '';
       if (e.param === 'L_te')
@@ -878,8 +893,8 @@
           <div class="rwho">3 · Result<span class="rwhen">recomputed from the model as this page loaded</span></div>
           <div class="tablewrap"><table>
             <tr><th>f (Hz)</th>${fs.map(f => `<th>${f}</th>`).join('')}</tr>
-            <tr><td>pressure gain before (dB)</td>${fs.map(f0 => `<td class="num">${at(before.total, f0, C.db).toFixed(2)}</td>`).join('')}</tr>
-            <tr><td>pressure gain after (dB)</td>${fs.map(f0 => `<td class="num">${at(after.total, f0, C.db).toFixed(2)}</td>`).join('')}</tr>
+            <tr><td>pressure gain before (dB)</td>${fs.map(f0 => `<td class="num">${atOn(FNUM, before.total, f0, C.db).toFixed(2)}</td>`).join('')}</tr>
+            <tr><td>pressure gain after (dB)</td>${fs.map(f0 => `<td class="num">${atOn(FNUM, after.total, f0, C.db).toFixed(2)}</td>`).join('')}</tr>
             <tr><td><b>change (dB)</b></td>${dH.map(v => `<td class="num"><b>${v >= 0 ? '+' : ''}${v.toFixed(3)}</b></td>`).join('')}</tr>
           </table></div>
           <p style="margin:6px 0 0">Peak pressure gain <b>${before.peakGainDb.toFixed(2)} →

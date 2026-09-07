@@ -133,15 +133,39 @@ R2.volumeVelocity = (R2.total/p2.N)./Zco;
 az = abs(Zin);
 loc = find(f > 200 & [false; az(2:end-1) < az(1:end-2) & az(2:end-1) < az(3:end); false], 1);
 if isempty(loc), [~, loc] = min(az); end
-R2.fResonance = f(loc);
+% Refine to sub-bin accuracy, identically to the JavaScript port, so the two
+% implementations report the same frequency rather than differing by a bin.
+R2.fResonance = refinePeak(f, -20*log10(az), loc);
 
 g = 20*log10(max(abs(R2.total), 1e-12));
-[R2.peakGainDb, ip] = max(g);
-R2.fPeak = f(ip);
+[~, ip] = max(g);
+[R2.fPeak, R2.peakGainDb] = refinePeak(f, g, ip);
 
 R2.f  = f;
 R2.p2 = p2;
 
+end
+
+% -------------------------------------------------------------------------
+function [fp, yp] = refinePeak(f, y, i)
+%REFINEPEAK  Sub-bin maximum by fitting a parabola in log-frequency and dB.
+%   Mirrors refinePeak() in the JavaScript port so both report the same
+%   frequency; without it a peak that moves less than one grid step reports
+%   as not moving at all.
+if i <= 1 || i >= numel(f)
+    fp = f(i); yp = y(i); return
+end
+x0 = log10(f(i-1)); x1 = log10(f(i)); x2 = log10(f(i+1));
+y0 = y(i-1);        y1 = y(i);        y2 = y(i+1);
+d = (x0-x1)*(x0-x2)*(x1-x2);
+if ~isfinite(d) || d == 0, fp = f(i); yp = y(i); return, end
+A = (x2*(y1-y0) + x1*(y0-y2) + x0*(y2-y1))/d;
+B = (x2^2*(y0-y1) + x1^2*(y2-y0) + x0^2*(y1-y2))/d;
+if A >= 0, fp = f(i); yp = y(i); return, end
+xv = -B/(2*A);
+if xv < x0 || xv > x2, fp = f(i); yp = y(i); return, end
+Cc = y1 - A*x1^2 - B*x1;
+fp = 10^xv;  yp = A*xv^2 + B*xv + Cc;
 end
 
 % -------------------------------------------------------------------------
