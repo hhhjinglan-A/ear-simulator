@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Outer + Middle Ear Simulator</title>
-<link rel="stylesheet" href="css/style.css?v=1788769076">
+<link rel="stylesheet" href="css/style.css?v=1788769683">
 </head>
 <body>
 
@@ -88,7 +88,7 @@
         <canvas id="cvMag" class="plot"></canvas>
       </div>
       <div class="card plotcard" data-v="phase" hidden>
-        <h3>Phase — shift in degrees (unwrapped); delay is the <i>slope</i>, not the value</h3>
+        <h3>Phase — shift in degrees (unwrapped). Not a time delay: group delay is &minus;d&phi;/d&omega; on a <i>linear</i> &omega; axis, so it cannot be read off this log-frequency plot by eye</h3>
         <canvas id="cvPhase" class="plot"></canvas>
       </div>
       <div class="card plotcard" data-v="z" hidden>
@@ -239,18 +239,18 @@
   </div>
 </section>
 
-<script src="data/reference.js?v=1788769076"></script>
-<script src="js/complex.js?v=1788769076"></script>
-<script src="js/outerEar.js?v=1788769076"></script>
-<script src="js/middleEar.js?v=1788769076"></script>
-<script src="js/combined.js?v=1788769076"></script>
-<script src="js/plot.js?v=1788769076"></script>
-<script src="js/paramSpecs.js?v=1788769076"></script>
-<script src="data/report.js?v=1788769076"></script>
-<script src="js/diagram.js?v=1788769076"></script>
-<script src="js/content.js?v=1788769076"></script>
-<script src="js/audio.js?v=1788769076"></script>
-<script src="js/experiments.js?v=1788769076"></script>
-<script src="js/app.js?v=1788769076"></script>
+<script src="data/reference.js?v=1788769683"></script>
+<script src="js/complex.js?v=1788769683"></script>
+<script src="js/outerEar.js?v=1788769683"></script>
+<script src="js/middleEar.js?v=1788769683"></script>
+<script src="js/combined.js?v=1788769683"></script>
+<script src="js/plot.js?v=1788769683"></script>
+<script src="js/paramSpecs.js?v=1788769683"></script>
+<script src="data/report.js?v=1788769683"></script>
+<script src="js/diagram.js?v=1788769683"></script>
+<script src="js/content.js?v=1788769683"></script>
+<script src="js/audio.js?v=1788769683"></script>
+<script src="js/experiments.js?v=1788769683"></script>
+<script src="js/app.js?v=1788769683"></script>
 </body>
 </html>

@@ -106,6 +106,7 @@
       $('#tab-' + b.dataset.tab).classList.add('on');
       Object.values(plots).forEach(p => p.draw());
       if (window.omePlots) window.omePlots.forEach(p => p.draw());
+      if (window.reportPlots) window.reportPlots.forEach(p => p.draw());
     }));
   }
 
@@ -368,10 +369,10 @@
         <div class="statusbar"></div>
         <p class="hint">${d.kind} · changes <code>${d.param}</code> × ${d.factor}
           (from the current value on the Simulator tab)</p>
-        <p><span class="step">1</span><b>Step 1 — your prediction</b></p>
+        <p><span class="step">1</span><b>Step 1 — your own prediction <span class="optional">optional</span></b></p>
         <textarea data-f="prediction" placeholder="What will happen to the magnitude and the phase, and why?">${s.prediction || ''}</textarea>
         <p><span class="step">2</span><button class="showAi">Show AI explanation</button>
-          <span class="hint">available once a prediction is written</span></p>
+          <span class="hint">always available — writing your own first is optional</span></p>
         <div class="aiexp">${d.ai}</div>
         <p><span class="step">3</span><button class="runExp">Run experiment</button></p>
         <div class="result"></div>
@@ -383,11 +384,14 @@
 
     $$('#expList .exp').forEach(el => {
       const id = el.dataset.id, def = Experiments.DEFS.find(d => d.id === id);
+      // The assignment's own order is: predict -> ask the AI to explain its
+      // prediction -> run -> compare. The AI prediction is part of the method,
+      // so it is never withheld. The student's own box is optional and never
+      // blocks anything; we only record whether it was written first.
       el.querySelector('.showAi').addEventListener('click', () => {
         const pred = el.querySelector('[data-f=prediction]').value.trim();
-        if (!pred) { alert('Write your prediction first, then the AI explanation will open.'); return; }
         el.querySelector('.aiexp').style.display = 'block';
-        persist(id, { aiViewedAfterPrediction: true });
+        persist(id, { aiViewedAfterPrediction: !!pred });
       });
       el.querySelector('.runExp').addEventListener('click', () => runExperiment(id, def, el, false));
       el.querySelectorAll('textarea').forEach(ta => ta.addEventListener('input', () => {
@@ -836,62 +840,92 @@
     const R = window.__EAR_REPORT__;
     if (!R) { $('#reportBody').innerHTML = '<div class="warn">report data not loaded</div>'; return; }
     const fs = [100, 500, 1000, 2000, 4000, 10000];
+    const fLC = p => 1 / (2 * Math.PI * Math.sqrt(p.L_te * p.C_te));
+    const fJoint = p => 1 / (2 * Math.PI * Math.sqrt((p.L_s + p.L_v) * p.C_is));
 
-    $('#reportBody').innerHTML = R.experiments.map(e => {
+    let html = `<div class="note"><b>Baseline for all three experiments.</b> ${R.baselineNote}</div>`;
+
+    html += R.experiments.map(e => {
       const q2 = JSON.parse(JSON.stringify(D2));
       q2[e.param] = D2[e.param] * e.factor;
       const before = MiddleEar.response(D2, F);
       const after  = MiddleEar.response(q2, F);
       const dH = fs.map(f0 => at(after.total, f0, C.db) - at(before.total, f0, C.db));
-      const fLC = p => 1 / (2 * Math.PI * Math.sqrt(p.L_te * p.C_te));
 
-      const done = !!(e.studentFirstAnswer && e.postHoc);
-      const block = (cls, who, when, txt) => txt ? `
-        <div class="rblock ${cls}">
-          <div class="rwho">${who}<span class="rwhen">${when}</span></div>
-          <div>${txt.replace(/\n\n/g, '<br><br>')}</div>
-        </div>` : '';
+      let extra = '';
+      if (e.param === 'L_te')
+        extra = `<br><span class="hint">Isolated L_te–C_te resonance, which is <b>not</b> the system
+          peak: ${fLC(D2).toFixed(0)} → ${fLC(q2).toFixed(0)} Hz
+          (${((fLC(q2) - fLC(D2)) / fLC(D2) * 100).toFixed(1)} %).</span>`;
+      if (e.param === 'C_is')
+        extra = `<br><span class="hint">Joint/stapes resonance 1/(2π√((L_s+L_v)·C_is)):
+          ${fJoint(D2).toFixed(0)} → ${fJoint(q2).toFixed(0)} Hz.</span>`;
 
-      return `<div class="repcard">
-        <h3>${e.title} <span class="pill ${done ? 'green' : 'grey'}">${done ? 'complete' : 'prediction pending'}</span></h3>
-        <p class="hint">${e.kind} · changes <code>${e.param}</code> from
-          ${(D2[e.param]).toPrecision(4)} to ${q2[e.param].toPrecision(4)} (×${e.factor}),
-          starting from the published defaults. <br>${e.question}</p>
+      const blk = (cls, who, when, txt) => txt ? `<div class="rblock ${cls}">
+          <div class="rwho">${who}<span class="rwhen">${when}</span></div><div>${txt}</div></div>` : '';
 
-        ${block('r-student', 'Student — first answer', e.studentFirstAnswer ? e.studentFirstAnswer.when : '',
-                e.studentFirstAnswer ? e.studentFirstAnswer.text : null)}
-        ${block('r-ai', 'AI-assisted explanation', 'after the first answer, before running',
-                e.aiExplanation)}
-        ${block('r-student', 'Student — revised prediction', e.studentRevised ? e.studentRevised.when : '',
-                e.studentRevised ? e.studentRevised.text : null)}
-
+      return `<div class="repcard" id="rep-${e.id}">
+        <h3>${e.title}</h3>
+        <div class="rblock r-setup">
+          <div class="rwho">1 · Parameter change and baseline</div>
+          <div>${e.kind} — <code>${e.param}</code> from <b>${D2[e.param].toPrecision(4)}</b>
+            to <b>${q2[e.param].toPrecision(4)}</b> (×${e.factor}). Every other element keeps its
+            default value. ${e.why}</div>
+        </div>
+        ${blk('r-ai', '2 · AI-assisted prediction and explanation',
+              'written from the circuit before running · source: Claude Opus 5', e.aiPrediction)}
         <div class="rblock r-result">
-          <div class="rwho">Result<span class="rwhen">computed from the model just now</span></div>
+          <div class="rwho">3 · Result<span class="rwhen">recomputed from the model as this page loaded</span></div>
           <div class="tablewrap"><table>
             <tr><th>f (Hz)</th>${fs.map(f => `<th>${f}</th>`).join('')}</tr>
             <tr><td>pressure gain before (dB)</td>${fs.map(f0 => `<td class="num">${at(before.total, f0, C.db).toFixed(2)}</td>`).join('')}</tr>
             <tr><td>pressure gain after (dB)</td>${fs.map(f0 => `<td class="num">${at(after.total, f0, C.db).toFixed(2)}</td>`).join('')}</tr>
             <tr><td><b>change (dB)</b></td>${dH.map(v => `<td class="num"><b>${v >= 0 ? '+' : ''}${v.toFixed(3)}</b></td>`).join('')}</tr>
           </table></div>
-          <p style="margin:6px 0 0">
-            Peak pressure gain ${before.peakGainDb.toFixed(2)} → <b>${after.peakGainDb.toFixed(2)} dB</b> ·
-            system peak ${before.fPeak.toFixed(0)} → <b>${after.fPeak.toFixed(0)} Hz</b>
-            (${((after.fPeak - before.fPeak) / before.fPeak * 100).toFixed(1)} %) ·
-            |z_t| minimum ${before.fResonance.toFixed(0)} → ${after.fResonance.toFixed(0)} Hz
-            ${e.param === 'L_te' ? `<br><span class="hint">For contrast, the LOCAL resonance of the
-              isolated L_te–C_te pair, which is not the system peak:
-              ${fLC(D2).toFixed(0)} → ${fLC(q2).toFixed(0)} Hz
-              (${((fLC(q2) - fLC(D2)) / fLC(D2) * 100).toFixed(1)} %).</span>` : ''}
-          </p>
+          <p style="margin:6px 0 0">Peak pressure gain <b>${before.peakGainDb.toFixed(2)} →
+            ${after.peakGainDb.toFixed(2)} dB</b> · system peak <b>${before.fPeak.toFixed(0)} →
+            ${after.fPeak.toFixed(0)} Hz</b>
+            (${after.fPeak >= before.fPeak ? 'up' : 'down'}
+             ${Math.abs(after.fPeak - before.fPeak).toFixed(0)} Hz) ·
+            |z_t| minimum ${before.fResonance.toFixed(0)} → ${after.fResonance.toFixed(0)} Hz${extra}</p>
+          <canvas class="plot repplot" data-e="${e.id}"></canvas>
         </div>
-
-        ${block('r-post', 'Analysis', 'written AFTER seeing the result — not a prediction', e.postHoc)}
-        ${!done ? `<div class="rblock r-pending"><div class="rwho">Not yet written</div>
-          <div>The student's first answer for this experiment has not been recorded yet. The
-          numbers above are already computed; only the written prediction and analysis are
-          outstanding.</div></div>` : ''}
+        ${blk('r-post', '4 · Prediction compared with result', 'written AFTER the run', e.comparison)}
+        ${blk('r-post', '5 · Corrections and limitations', 'written AFTER the run', e.corrections)}
+        <details class="fold"><summary>Your own prediction (optional)</summary><div>
+          <p class="hint">The assignment asks for an AI prediction and explanation, which is section 2
+          above. If you also want to record your own, use the
+          <a href="#" data-goto="exp">Experiments</a> tab — it never blocks the run.</p></div></details>
       </div>`;
     }).join('');
+
+    /* the AI error case */
+    const c = R.aiCase;
+    html += `<div class="aicase"><h3>${c.title}</h3><p>${c.summary}</p>
+      <div class="tl">${c.timeline.map(t => `<div class="ev ${t.tag}">
+        <div class="who">${t.who}<span class="tag ${t.tag}">${t.tag === 'ai' ? 'AI' : 'student'}</span>
+          <span class="rwhen">${t.when}</span></div>
+        <div>${t.text}</div></div>`).join('')}</div>
+      <p class="note" style="margin-top:10px"><b>What this shows.</b> ${c.lesson}</p></div>`;
+
+    $('#reportBody').innerHTML = html;
+
+    /* draw a before/after curve inside each experiment card */
+    R.experiments.forEach(e => {
+      const q2 = JSON.parse(JSON.stringify(D2));
+      q2[e.param] = D2[e.param] * e.factor;
+      const b0 = MiddleEar.response(D2, F), a0 = MiddleEar.response(q2, F);
+      const cv = document.querySelector(`.repplot[data-e="${e.id}"]`);
+      const pl = new Plot(cv, { yLabel: 'Pressure gain (dB)' });
+      pl.setSeries([
+        { key: 'b', label: 'before', color: '#8b8f98', width: 2, dash: [5, 4],
+          data: F.map((f, i) => ({ x: f, y: C.db(b0.total[i]) })) },
+        { key: 'a', label: 'after',  color: '#a3142b', width: 2.4,
+          data: F.map((f, i) => ({ x: f, y: C.db(a0.total[i]) })) }
+      ]);
+      if (!window.reportPlots) window.reportPlots = [];
+      window.reportPlots.push(pl);
+    });
     wrapTables();
   }
 
