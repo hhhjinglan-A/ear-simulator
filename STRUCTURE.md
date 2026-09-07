@@ -3,7 +3,10 @@
 Six things at the top level. Nothing is duplicated.
 
 ```
-README.md                  the report — the main document to read
+REPORT.pdf                 THE SUBMISSION — 13 pages, everything the
+                           assignment asks for, figures included
+REPORT.html                the source of REPORT.pdf (figures embedded)
+README.md                  the same material in full detail, for reference
 USAGE.md                   how to run everything
 STRUCTURE.md               this file
 LICENSE                    MIT
