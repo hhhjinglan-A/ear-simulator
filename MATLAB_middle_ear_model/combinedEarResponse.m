@@ -57,7 +57,15 @@ function C = combinedEarResponse(p1, p2, f)
 %      exact only while the middle ear is linear. The acoustic reflex and
 %      level-dependent annular ligament (P2.nonlinear) are not modelled.
 %
-%   6. NO INDIVIDUALISATION. The outer-ear parameters are generic adult
+%   6. THE OUTER-EAR STAGE ALREADY OVER-PREDICTS, and the cascade inherits
+%      it. The outer-ear model (unchanged from the previous assignment)
+%      gives a combined peak of about +22 dB near 3 kHz, where a real ear
+%      measures roughly +15 to +20 dB at 2.5-3 kHz -- an overestimate of
+%      some 2-7 dB that this cascade carries straight through into
+%      C.total. Any absolute level quoted from C.total should be read with
+%      that offset in mind; the middle-ear stage is not responsible for it.
+%
+%   7. NO INDIVIDUALISATION. The outer-ear parameters are generic adult
 %      anatomy; the middle-ear values are a transcribed circuit table of
 %      unverified provenance (see MIDDLEEARPARAMS). They are
 %      not from the same ear, or from any one ear.

@@ -7,7 +7,8 @@ function runAll()
 %
 %   It does everything in order and leaves the figures open on screen:
 %
-%     1. runs the 86 verification checks          (test_middleEar)
+%     0. runs the INHERITED outer-ear suite        (test_outerEar, from H1)
+%     1. runs the middle-ear verification checks   (test_middleEar)
 %     2. makes figures 1-3, outer / middle / combined
 %                                                 (generateCombinedFigures)
 %     3. runs the four Part 4 experiments         (runMiddleEarExperiments)
@@ -39,16 +40,19 @@ addpath(here);
 
 line = @(t) fprintf('\n%s\n%s\n%s\n', repmat('=',1,66), t, repmat('=',1,66));
 
-line('STEP 1 of 4   verification suite');
+line('STEP 1 of 5   inherited outer-ear suite (unchanged from H1)');
+test_outerEar;
+
+line('STEP 2 of 5   middle-ear verification suite');
 test_middleEar;
 
-line('STEP 2 of 4   figures 1-3: outer, middle, combined');
+line('STEP 3 of 5   figures 1-3: outer, middle, combined');
 generateCombinedFigures(figDir);
 
-line('STEP 3 of 4   Part 4 parameter experiments (figure 4)');
+line('STEP 4 of 5   Part 4 parameter experiments (figure 4)');
 runMiddleEarExperiments(figDir);
 
-line('STEP 4 of 4   graduate extension: otitis media (figure 5)');
+line('STEP 5 of 5   graduate extension: otitis media (figure 5)');
 runOtitisMedia(figDir);
 
 line('DONE  -- opening the figures');

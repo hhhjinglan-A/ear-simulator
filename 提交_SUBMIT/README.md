@@ -41,12 +41,23 @@ Base MATLAB only — no toolboxes. Developed and verified on R2026a.
 
 | Command | What it checks | Result |
 |---|---|---|
+| `test_outerEar` | **inherited from the outer-ear assignment, unchanged** — 20 physics checks on the outer-ear engine, including a cross-check against an ngspice simulation of the same IEC 318 circuit | ALL PASSED |
 | `test_vsPaper` | agreement with the paper's Figs. 2 and 3 | 1.34 / 0.91 dB rms |
 | `test_middleEar` | circuit algebra, units, transformer, response shape | 80 checks, 0 failed |
 | `test_audioIR` | audio path reproduces the analytic transfer function | 23 checks, 0 failed |
 | `test_combinedGui` | GUI builds and every control works | 0 failures |
 
-All 20 source files pass `checkcode` with no warnings.
+All source files pass `checkcode` with no warnings.
+
+### What is inherited from the outer-ear assignment
+
+Four files are carried over **byte-identical**, not rewritten:
+`outerEarParams.m`, `outerEarResponse.m`, `outerEarIR.m` and its test suite
+`test_outerEar.m`. `runAll` runs that suite **first**, so the outer-ear engine is
+re-verified in its new home before anything is cascaded onto it — the copies are
+not assumed to still behave, they are checked. The middle-ear GUI, figure script
+and impulse-response helper are modelled on their outer-ear counterparts but are
+separate files, since they drive a different transfer function.
 
 ---
 
@@ -104,6 +115,18 @@ The second and third only work if the elements are **divided** by T_r², which i
 what licenses multiplying the output by T_r once. The cavity compliances are
 *not* referred (they sum directly to V_c/(ρc²)) — correctly, since the cavity is
 physically on the eardrum side of the transformer.
+
+**Independent circuit cross-check, inherited from the outer-ear assignment.**
+The outer-ear model's IEC 318 mode was validated against an **ngspice**
+simulation of the same lumped circuit, which is an independent check of a
+circuit transcription of exactly the kind this assignment asks for:
+
+| Quantity | ngspice | MATLAB |
+|---|---|---|
+| Peak frequency | 5636.8 Hz | 5634.95 Hz (rel. err 3.3e-4) |
+| Peak gain | 27.00 dB | 27.0018 dB (rel. err 6.7e-5) |
+
+That check runs as part of `test_outerEar`.
 
 **Volume assignment** (p. 1510): V_c = 5.5 cm³ total, antrum + pneumatic cells
 ≈ 5 cm³, tympanic cavity V_tc = 0.5 cm³. So `C_cp` (3.6 µF ↔ 5.07 cm³) is the
@@ -217,6 +240,13 @@ minimum 3.49**. So:
 3. **The two models do not share a boundary condition.** The outer-ear model
    terminates its canal in a *rigid* eardrum (gain 1/cos kL), not in the z_t
    computed here, and nothing feeds back from stapes to concha.
+
+4. **The outer-ear stage already over-predicts, and the cascade inherits it.**
+   The outer-ear model gives a combined peak of about +22 dB near 3 kHz where a
+   real ear measures roughly +15 to +20 dB at 2.5–3 kHz — an overestimate of
+   some 2–7 dB carried straight into the combined +39.2 dB figure. The
+   middle-ear stage is not responsible for it, and any absolute level quoted
+   from `C.total` should be read with that offset in mind.
 
 Also: the model is **strictly linear** (`p2.nonlinear` unimplemented — Eqs. 3,
 6, 7 are documented but not coded), and the outer- and middle-ear parameters do
