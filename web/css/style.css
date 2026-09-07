@@ -4,8 +4,7 @@
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);
-  font:14px/1.5 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
-.zh{color:#5b6472;font-size:.92em;font-weight:400}
+  font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
 header{display:flex;align-items:center;justify-content:space-between;gap:16px;
   padding:12px 18px;background:var(--panel);border-bottom:1px solid var(--line)}
 h1{font-size:18px;margin:0}

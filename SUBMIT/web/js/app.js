@@ -36,8 +36,7 @@
       $('#headStat').textContent = 'reference data not loaded';
       document.body.insertAdjacentHTML('afterbegin',
         '<div class="warn" style="margin:12px">Could not load <code>data/reference.js</code>. ' +
-        'Re-run <code>exportWebReference.m</code> in MATLAB to regenerate it. ' +
-        '<span class="zh">未能载入参考数据，请在 MATLAB 里重新运行 exportWebReference.m。</span></div>');
+        'Re-run <code>exportWebReference.m</code> in MATLAB to regenerate it.</div>');
     }
   }
 
@@ -89,12 +88,12 @@
   }
 
   function buildControls() {
-    let h = `<details class="grp" open><summary>Outer ear 外耳 (14)</summary><div class="body">`;
+    let h = `<details class="grp" open><summary>Outer ear (14)</summary><div class="body">`;
     for (const s of ParamSpecs.OUTER)
       h += ctlHTML('o:' + s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], P1[s[0]]);
-    h += `<div class="p"><div class="lab"><span class="nm">Canal model 耳道模型</span></div>
+    h += `<div class="p"><div class="lab"><span class="nm">Ear-canal model</span></div>
       <select id="canalModel">
-        <option value="quarterwave">Quarter-wave tube 四分之一波长管</option>
+        <option value="quarterwave">Quarter-wave tube</option>
         <option value="iec318">IEC 318 equivalent circuit</option>
       </select></div>`;
     h += `</div></details>`;
@@ -162,9 +161,9 @@
 
   /* ================= legend ================= */
   function buildLegend() {
-    const items = [['outer', 'Outer ear alone 外耳'], ['middle', 'Middle ear alone 中耳'],
-                   ['combined', 'Combined 组合']];
-    if (baseline) items.push(['base', 'Baseline 基线']);
+    const items = [['outer', 'Outer ear alone'], ['middle', 'Middle ear alone'],
+                   ['combined', 'Combined']];
+    if (baseline) items.push(['base', 'Baseline']);
     $('#legendbar').innerHTML = items.map(([k, l]) =>
       `<label><input type="checkbox" data-vis="${k}" ${vis[k] ? 'checked' : ''}>
        <span class="swatch" style="background:${COL[k]}"></span>${l}</label>`).join('');
@@ -225,16 +224,16 @@
     const lr = cur.loadingRatio;
     const med = [...lr].sort((a, b) => a - b)[Math.floor(lr.length / 2)];
     const Y226 = 1 / (at(m.inputImpedance, 226, C.abs) * P2.Z_unitToSI) / 1e-8;
-    const kv = (t, v, zh) => `<div class="kv"><b>${t}${zh ? ' · <span class="zh">' + zh + '</span>' : ''}</b><span>${v}</span></div>`;
+    const kv = (t, v, zh) => `<div class="kv"><b>${t}${zh ? ' ·' : ''}</b><span>${v}</span></div>`;
     $('#readout').innerHTML =
-      kv('Middle-ear peak', m.peakGainDb.toFixed(1) + ' dB @ ' + m.fPeak.toFixed(0) + ' Hz', '中耳峰值') +
-      kv('Combined peak', cur.peakGainDb.toFixed(1) + ' dB @ ' + cur.fPeak.toFixed(0) + ' Hz', '组合峰值') +
-      kv('Middle-ear resonance', m.fResonance.toFixed(0) + ' Hz', '中耳共振') +
-      kv('|z_t| @ 1 kHz', (at(m.inputImpedance, 1000, C.abs) * P2.Z_unitToSI).toExponential(2) + ' Pa·s/m³', '') +
-      kv('Static admittance Y(226 Hz)', Y226.toFixed(2) + ' mmho', '静态导纳') +
-      kv('Cascade loading |z_t|/Z_canal', 'min ' + Math.min(...lr).toFixed(2) + ' · median ' + med.toFixed(2), '级联可靠度') +
-      kv('H_middle @ 1 kHz', at(cur.Hmiddle, 1000, C.db).toFixed(1) + ' dB', '') +
-      kv('H_combined @ 3 kHz', at(cur.total, 3000, C.db).toFixed(1) + ' dB', '');
+      kv('Middle-ear peak', m.peakGainDb.toFixed(1) + ' dB @ ' + m.fPeak.toFixed(0) + ' Hz') +
+      kv('Combined peak', cur.peakGainDb.toFixed(1) + ' dB @ ' + cur.fPeak.toFixed(0) + ' Hz') +
+      kv('Middle-ear resonance', m.fResonance.toFixed(0) + ' Hz') +
+      kv('|z_t| @ 1 kHz', (at(m.inputImpedance, 1000, C.abs) * P2.Z_unitToSI).toExponential(2) + ' Pa·s/m³') +
+      kv('Static admittance Y(226 Hz)', Y226.toFixed(2) + ' mmho') +
+      kv('Cascade loading |z_t|/Z_canal', 'min ' + Math.min(...lr).toFixed(2) + ' · median ' + med.toFixed(2)) +
+      kv('H_middle @ 1 kHz', at(cur.Hmiddle, 1000, C.db).toFixed(1) + ' dB') +
+      kv('H_combined @ 3 kHz', at(cur.total, 3000, C.db).toFixed(1) + ' dB');
     $('#headStat').textContent =
       'combined peak ' + cur.peakGainDb.toFixed(1) + ' dB @ ' + cur.fPeak.toFixed(0) + ' Hz\n' +
       F.length + ' points · live';
@@ -278,7 +277,6 @@
           non-finite values ${bad}.<br>
           ${rows.length} comparisons over ${Object.keys(REF.cases).length} scenarios ×
           ${f.length} frequencies, compared in the complex plane.
-          <span class="zh">网页与 MATLAB 的复数响应逐点比较，最大相对误差 ${worstRel.toExponential(2)}（机器精度量级）。</span>
           </div>
         <table><tr><th>scenario</th><th>quantity</th><th>max rel.</th><th>max dB</th><th>max deg</th></tr>` +
         rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td class="num">${r[2].toExponential(2)}</td>
@@ -296,16 +294,15 @@
         <h3>${d.title}</h3>
         <p class="hint">${d.kind} · changes <code>${d.param}</code> × ${d.factor}
           (from the current value on the Simulator tab)</p>
-        <p><span class="step">1</span><b>Your prediction 你的预测</b>
-          <span class="zh">— 先写，再看解释。此栏不会被自动填写。</span></p>
-        <textarea data-f="prediction" placeholder="What will happen to magnitude and phase, and why? 会怎么变？为什么？">${s.prediction || ''}</textarea>
-        <p><span class="step">2</span><button class="showAi">Show AI explanation 查看AI解释</button>
-          <span class="hint zh">写完预测后再点</span></p>
+        <p><span class="step">1</span><b>Step 1 — your prediction</b></p>
+        <textarea data-f="prediction" placeholder="What will happen to the magnitude and the phase, and why?">${s.prediction || ''}</textarea>
+        <p><span class="step">2</span><button class="showAi">Show AI explanation</button>
+          <span class="hint">available once a prediction is written</span></p>
         <div class="aiexp">${d.ai}</div>
-        <p><span class="step">3</span><button class="runExp">Run experiment 运行实验</button></p>
+        <p><span class="step">3</span><button class="runExp">Run experiment</button></p>
         <div class="result"></div>
-        <p><span class="step">4</span><b>Your observation 你的观察与对比</b></p>
-        <textarea data-f="observation" placeholder="Did it match your prediction? What surprised you? 与预测一致吗？哪里意外？">${s.observation || ''}</textarea>
+        <p><span class="step">4</span><b>Step 4 — your observation</b></p>
+        <textarea data-f="observation" placeholder="Did it match your prediction? What surprised you?">${s.observation || ''}</textarea>
         <div class="hint saved"></div>
       </div>`;
     }).join('');
@@ -314,14 +311,14 @@
       const id = el.dataset.id, def = Experiments.DEFS.find(d => d.id === id);
       el.querySelector('.showAi').addEventListener('click', () => {
         const pred = el.querySelector('[data-f=prediction]').value.trim();
-        if (!pred) { alert('Write your prediction first.\n请先写下你的预测，再查看 AI 解释。'); return; }
+        if (!pred) { alert('Write your prediction first, then the AI explanation will open.'); return; }
         el.querySelector('.aiexp').style.display = 'block';
         persist(id, { aiViewedAfterPrediction: true });
       });
       el.querySelector('.runExp').addEventListener('click', () => runExperiment(id, def, el));
       el.querySelectorAll('textarea').forEach(ta => ta.addEventListener('input', () => {
         const o = {}; o[ta.dataset.f] = ta.value; persist(id, o);
-        el.querySelector('.saved').textContent = 'saved 已保存 ' + new Date().toLocaleTimeString();
+        el.querySelector('.saved').textContent = 'saved ' + new Date().toLocaleTimeString();
       }));
       const s = Experiments.load()[id];
       if (s && s.result) showResult(el, s.result);
@@ -344,7 +341,7 @@
       download('experiment_log.csv', csv, 'text/csv');
     });
     $('#expClear').addEventListener('click', () => {
-      if (confirm('Delete all experiment records? 确定清空全部实验记录？')) {
+      if (confirm('Delete all experiment records? This cannot be undone.')) {
         localStorage.removeItem(Experiments.KEY); buildExperiments();
       }
     });
@@ -380,7 +377,7 @@
     const box = el.querySelector('.result');
     box.style.display = 'block';
     box.innerHTML =
-      `<b>Result 结果</b> — ran ${new Date(r.ranAt).toLocaleString()}<br>
+      `<b>Result</b> — ran ${new Date(r.ranAt).toLocaleString()}<br>
        <code>${r.param}</code>: ${r.baselineValue.toPrecision(4)} → ${r.newValue.toPrecision(4)} (×${r.factor})
        <table><tr><th>f (Hz)</th>${r.freqs.map(f => `<th>${f}</th>`).join('')}</tr>
        <tr><td>ΔH<sub>middle</sub> (dB)</td>${r.dH.map(v => `<td class="num">${v >= 0 ? '+' : ''}${v.toFixed(2)}</td>`).join('')}</tr></table>
@@ -391,11 +388,11 @@
 
   /* ================= OME tab ================= */
   function buildOme() {
-    const conds = [['middle_normal', 'Healthy adult 健康成人', 'combined'],
-                   ['middle_child', 'Healthy child 健康儿童', 'child'],
-                   ['middle_ome_mild', 'OME mild 轻度', 'mild'],
-                   ['middle_ome_moderate', 'OME moderate 中度', 'moderate'],
-                   ['middle_ome_severe', 'OME severe 重度', 'severe']];
+    const conds = [['middle_normal', 'Healthy adult', 'combined'],
+                   ['middle_child', 'Healthy child', 'child'],
+                   ['middle_ome_mild', 'OME mild', 'mild'],
+                   ['middle_ome_moderate', 'OME moderate', 'moderate'],
+                   ['middle_ome_severe', 'OME severe', 'severe']];
     const on = { middle_normal: true, middle_child: true, middle_ome_mild: true,
                  middle_ome_moderate: true, middle_ome_severe: true };
     $('#omeButtons').innerHTML = conds.map(([k, l]) =>
@@ -430,7 +427,7 @@
     const child = MiddleEar.response(REF.params.middle_child, F);
     const fPTA = [500, 1000, 2000, 4000];
     const y226 = (r, p) => 1 / (at(r.inputImpedance, 226, C.abs) * p.Z_unitToSI) / 1e-8;
-    let t = `<h3>What changes, and on what evidence <span class="zh">改了哪些参数、依据是什么</span></h3>
+    let t = `<h3>What changes, and on what evidence</h3>
       <table><tr><th>Quantity</th><th>Status</th><th>Basis</th></tr>
       <tr><td>C_cp, C_cm</td><td><b>DERIVED</b></td><td>Eq. (2) C = V/(ρ_a c²) from the remaining air volume (1−φ)·V_c — the same relation that reproduces Pascal's adult values to 1.2 %</td></tr>
       <tr><td>Added drum inertance</td><td><b>DERIVED</b></td><td>ρ·t/A_t for a fluid layer of depth t on the drum. <i>Assumes the layer moves rigidly with the drum.</i></td></tr>
@@ -440,7 +437,7 @@
       <tr><td>C_te, R_a factors</td><td><b>ASSUMED</b></td><td>drum thickening / retraction; aditus swelling</td></tr>
       <tr><td>Cochlea, joint, reflex elements</td><td><b>UNCHANGED</b></td><td>OME is conductive — bone conduction stays normal — so nothing distal to the ossicles should move. The acoustic-reflex parameters are a <i>loudness</i> mechanism; using them as an infection model would be a category error.</td></tr>
       </table>
-      <h3>Results <span class="zh">结果</span></h3><table>
+      <h3>Results</h3><table>
       <tr><th>Ear</th><th>φ</th><th>fluid depth</th><th>air volume</th><th>L_te</th><th>4PTA loss</th><th>Y(226 Hz)</th><th>resonance</th></tr>`;
     const cr = MiddleEar.response(REF.params.middle_child, F);
     t += `<tr><td>healthy child</td><td>—</td><td>—</td><td class="num">${REF.params.middle_child.V_c.toFixed(2)} cm³</td>
@@ -462,13 +459,12 @@
 
     $('#omeNotes').innerHTML = `
       <div class="warn"><b>This extension does NOT reproduce clinical otitis media, and that is
-      reported rather than tuned away.</b>
-      <span class="zh">这个扩展没有复现临床中耳炎，如实报告而不是调参掩盖。</span><br><br>
+      reported rather than tuned away.</b><br><br>
       The <b>direction</b> of the loss and its <b>flat</b> configuration are right. The
       <b>magnitude is far too small</b> (about 1–7 dB against a clinical air-bone gap of 10–40 dB,
       mean ≈26 dB), static admittance never reaches type B (&lt;0.2 mmho), and the resonance
       frequency moves the <i>wrong way</i> for mild and moderate.</div>
-      <h3>Why — measured, not guessed <span class="zh">原因是测出来的，不是猜的</span></h3>
+      <h3>Why — measured, not guessed</h3>
       <p><code>R_cm</code> = 420 Ω sits <b>in parallel</b> across the whole cavity block in Fig. 1,
       so it caps that block's impedance no matter how much air the fluid displaces:</p>
       <table><tr><th>Ear</th><th>max |Z_cavity|</th></tr>
@@ -480,13 +476,11 @@
       the fluid mass-loads the drum more than its loss of air stiffens it. A lumped air compliance simply
       cannot express a middle ear whose air space has been replaced by liquid.
       <b>Fixing this needs a different element, not a different number</b> — which is why the assumed
-      severities were not adjusted to close the gap.
-      <span class="zh">腔体阻抗被 R_cm 锁死，所以电路对腔体容积在结构上不敏感；要修得换元件，不是调数字。</span></p>
+      severities were not adjusted to close the gap.</p>
       <p class="hint">A healthy child is <b>not</b> the adult model renamed: its cavity volume is changed
       and the capacitances are re-derived from it. The child-vs-adult difference is small
       (about +0.5 dB 4PTA), which is itself a reportable result — the paediatric anatomy alone does
-      little here, so almost all of the modelled effect comes from the effusion.
-      <span class="zh">健康儿童不是把成人模型改个名字：腔体容积改了、电容按公式重新推导。儿童与成人差别很小（约 0.5 dB），这本身也是结果。</span></p>`;
+      little here, so almost all of the modelled effect comes from the effusion.</p>`;
   }
 
   /* ================= audio ================= */
@@ -512,7 +506,7 @@
     };
     const src = () => {
       if ($('#audSrc').value === 'file') {
-        if (!userAudio) { alert('Upload an audio file first. 请先上传音频。'); return null; }
+        if (!userAudio) { alert('Upload an audio file first.'); return null; }
         return userAudio;
       }
       return { data: EarAudio.makeSource($('#audSrc').value, fs, 2.5), fs: fs };
@@ -532,12 +526,12 @@
          clip used <b>${info.gainDb.toFixed(1)} dB</b>. The convolution itself is <b>not</b> normalised,
          so the model's real gain is preserved — but because each clip is peak-normalised separately,
          <b>loudness differences between "original" and "through the ear" are removed</b>. Compare
-         timbre, not level. <span class="zh">每段音频各自峰值归一化到 0.85，所以"原声"与"过耳"之间的响度差被抵消了，请比较音色而不是音量。本次归一化增益 ${info.gainDb.toFixed(1)} dB。</span>`;
+         timbre, not level.`;
     };
     $('#btnDry').addEventListener('click', () => go(false));
     $('#btnWet').addEventListener('click', () => go(true));
     $('#btnStop').addEventListener('click', () => player.stop());
-    $('#normNote').textContent = 'Play something to see the exact figure. 播放后显示具体数值。';
+    $('#normNote').textContent = 'Play something to see the exact figure.';
 
     /* downloads */
     $('#dlCsv').addEventListener('click', () => {
@@ -571,7 +565,7 @@
       a.href = URL.createObjectURL(blob);
       a.download = 'impulse_response.wav'; a.click();
       $('#audStat').textContent = 'IR written; WAV peak-normalised by ×' + scale.toPrecision(4) +
-        ' (16-bit files cannot hold the raw gain). 原始增益无法存进 16-bit WAV，已按此系数归一化。';
+        ' (16-bit WAV cannot hold the raw gain, so the file is peak-normalised).';
     });
   }
 
