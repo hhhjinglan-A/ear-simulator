@@ -50,14 +50,23 @@ velocity and the pressure it drops is subtracted from what continues on; a shunt
 parallel route back to the return, diverting velocity that then never reaches the cochlea. Only the
 resistances dissipate.</p>
 
+<p><b>My own check against Figure 1.</b> I checked the main series and parallel connections
+directly against Figure 1 myself: the cavity branches; that the eardrum-loss branch taps
+<i>before</i> C_te; the series C_is&ndash;R_is shunt branch; and R_co in parallel with the
+series R_h&ndash;L_h branch. I also confirmed that p_c is taken across the cochlear load,
+after L_v. That check caught an error in the schematic printed in an earlier draft of this
+report, which drew Z_eardrum at node 2, omitted Z_stapes altogether, and terminated the
+cochlear load at node 2 instead of node 3. The schematic below is the corrected one. The
+computation code did not contain this error &mdash; it had the ladder right &mdash; so no
+number, figure or conclusion anywhere in this report changes as a result.</p>
+
 <pre style="font-family:Menlo,monospace;font-size:8.5pt;line-height:1.3">
-                          node 1                node 2
-  p_t o---[Z_cavity]---------o---[Z_ossicles]------o
-                                                   |
-                                         +---------+---------+
-                                   [Z_eardrum] [Z_joint] [Z_cochlea]  &lt;- p_c
-                                         |         |         |
-                                        gnd       gnd       gnd
+                       node 1             node 2             node 3
+  p_t o---[Z_cavity]------o---[Z_ossicles]----o---[Z_stapes]-----o
+       u_t                |                   |                  |
+                     [Z_eardrum]          [Z_joint]         [Z_cochlea]  &lt;- p_c
+                          |                   |                  |
+                         gnd                 gnd                gnd
 </pre>
 
 <table>
@@ -243,6 +252,7 @@ error changed the modelled pressure gain at 4 kHz by more than 10 dB.</p>
 <tr><td>8</td><td><b>Me</b></td><td><b>Asked whether the outer-ear assignment had actually been integrated.</b> It had not &mdash; its engine had been copied in without its test suite. Its 20 checks now run first.</td></tr>
 <tr><td>9</td><td><b>Me</b></td><td><b>Rejected two explanations:</b> that &ldquo;series elements are losses and shunt elements are dead ends&rdquo;, and that magnitude is &ldquo;insensitive to topology&rdquo;. Checking its own records, the assistant found the wrong circuit had been off by 12.7 dB at 4 kHz &mdash; magnitude had caught it immediately &mdash; and withdrew the claim.</td></tr>
 <tr><td>10</td><td><b>Me</b></td><td><b>Rejected post-hoc labelling.</b> The written &ldquo;predictions&rdquo; for E1&ndash;E3 had been composed after the results were known but labelled &ldquo;before running&rdquo;. They are now labelled as reasoning written afterwards, and one genuinely blind prediction was committed to git before its run as an audit trail.</td></tr>
+<tr><td>11</td><td><b>Me</b></td><td><b>Checked the circuit against Figure 1 myself and found the report&rsquo;s schematic wrong.</b> It drew Z_eardrum at node 2, omitted Z_stapes, and terminated the cochlear load at node 2. I specified the correction: Z_eardrum at node 1, Z_joint at node 2, Z_stapes between node 2 and the load, load and p_c at node 3. The assistant had drawn this figure correctly in three other places and coded it correctly in both languages, and had not noticed that the one figure in the submitted report disagreed with all of them.</td></tr>
 </table>
 <div class="key"><b>What this shows.</b> The assistant was reliable at arithmetic, at running its own
 tests, and at flagging claims it could not support. It was unreliable whenever it had to guess at

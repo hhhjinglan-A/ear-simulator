@@ -498,6 +498,14 @@ the common-mode bias of the spectral estimator.
    available it had written "Values are Figure 1 / Table I of Pascal et al."
    into the source, which it had never read; that was downgraded to an explicit
    "provenance unverified" block, and only restored once the paper was in hand.
+7. **The schematic printed in the report was wrong, and only a first-hand check of
+   Figure 1 caught it.** It drew `Z_eardrum` at node 2, omitted `Z_stapes` entirely, and
+   terminated the cochlear load at node 2 instead of node 3. The same circuit was drawn
+   correctly in this README, in the web app's diagram and in its written explanation, and
+   was coded correctly in both MATLAB and JavaScript — four correct copies, and the fifth
+   still wrong, because nothing in the toolchain compared a picture against the code it
+   claimed to depict. No computed number was affected. Found by reading Fig. 1 directly,
+   not by any self-check.
 
 ---
 

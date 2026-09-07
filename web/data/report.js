@@ -370,7 +370,17 @@ window.__EAR_REPORT__ = {
               'are losses and shunt elements are dead ends", and that magnitude is "insensitive to ' +
               'topology". The assistant checked its own recorded numbers, found they contradicted ' +
               'the second claim — the wrong circuit had been off by 12.7 dB at 4 kHz, so magnitude ' +
-              'had caught it immediately — and withdrew it.' }
+              'had caught it immediately — and withdrew it.' },
+      { who: 'Student', tag: 'stu', when: 'correction 5 — checking Figure 1 first-hand',
+        text: 'Checked the main series and parallel connections against Figure 1 directly: the ' +
+              'cavity branches, the eardrum-loss branch tapping before C_te, the series C_is-R_is ' +
+              'shunt branch, R_co in parallel with the series R_h-L_h branch, and p_c taken across ' +
+              'the cochlear load after L_v. This found that the schematic printed in the submitted ' +
+              'report was wrong — Z_eardrum drawn at node 2, Z_stapes missing, the cochlear load ' +
+              'terminating at node 2 — and specified the fix. The assistant had drawn the same ' +
+              'circuit correctly in three other places and coded it correctly in both MATLAB and ' +
+              'JavaScript, and had never noticed that one of its own figures disagreed with the ' +
+              'rest. Nothing computed was affected; the error was in the picture alone.' }
     ],
     lesson:
       'The pattern is consistent. The assistant was reliable at arithmetic, at running its own ' +
@@ -378,6 +388,8 @@ window.__EAR_REPORT__ = {
       'guess at structure it had not seen: it produced a confident, plausible-looking circuit that ' +
       'was wrong by more than 10 dB, and no amount of self-checking found that — only the source ' +
       'document did. Every substantive physics correction in this project traces back to the ' +
-      'student either supplying the source or rejecting an explanation.'
+      'student either supplying the source, rejecting an explanation, or checking the figure. ' +
+      'The last of those also shows a limit of self-consistency checks: four correct copies of ' +
+      'the circuit did not make the fifth one correct, because nothing compared them.'
   }
 };
