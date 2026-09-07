@@ -889,10 +889,17 @@
             to <b>${q2[e.param].toPrecision(4)}</b> (×${e.factor}). Every other element keeps its
             default value. ${e.why}</div>
         </div>
-        ${blk('r-ai', '2 · AI-assisted prediction and explanation',
-              'written from the circuit before running · source: Claude Opus 5', e.aiPrediction)}
+        ${blk('r-student', '2 · Student — own first answer',
+              e.studentFirstAnswer ? e.studentFirstAnswer.when : '',
+              e.studentFirstAnswer
+                ? e.studentFirstAnswer.text +
+                  (e.studentFirstAnswer.note ? `<br><span class="hint">${e.studentFirstAnswer.note}</span>` : '')
+                : null)}
+        ${blk('r-ai', '3 · AI-assisted reasoning',
+              'source: Claude Opus 5 — written after the results were known, see the note at the top',
+              e.aiPrediction)}
         <div class="rblock r-result">
-          <div class="rwho">3 · Result<span class="rwhen">recomputed from the model as this page loaded</span></div>
+          <div class="rwho">4 · Result<span class="rwhen">recomputed from the model as this page loaded</span></div>
           <div class="tablewrap"><table>
             <tr><th>f (Hz)</th>${fs.map(f => `<th>${f}</th>`).join('')}</tr>
             <tr><td>pressure gain before (dB)</td>${fs.map(f0 => `<td class="num">${atOn(FNUM, before.total, f0, C.db).toFixed(2)}</td>`).join('')}</tr>
@@ -907,8 +914,10 @@
             |z_t| minimum ${before.fResonance.toFixed(0)} → ${after.fResonance.toFixed(0)} Hz${extra}</p>
           <canvas class="plot repplot" data-e="${e.id}"></canvas>
         </div>
-        ${blk('r-post', '4 · Prediction compared with result', 'written AFTER the run', e.comparison)}
-        ${blk('r-post', '5 · Corrections and limitations', 'written AFTER the run', e.corrections)}
+        ${blk('r-post', '5 · Student answer scored against the result',
+              'written AFTER the run', e.studentScore)}
+        ${blk('r-post', '6 · Reasoning compared with result', 'written AFTER the run', e.comparison)}
+        ${blk('r-post', '7 · Corrections and limitations', 'written AFTER the run', e.corrections)}
         <details class="fold"><summary>Your own prediction (optional)</summary><div>
           <p class="hint">The assignment asks for an AI prediction and explanation, which is section 2
           above. If you also want to record your own, use the

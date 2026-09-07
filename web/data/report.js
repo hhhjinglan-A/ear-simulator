@@ -51,6 +51,34 @@ window.__EAR_REPORT__ = {
       why: 'L_te is the mass of the coupled eardrum–malleus–incus block. It sits in the SERIES ' +
            'path, so all the volume velocity passes through it.',
 
+      studentFirstAnswer: {
+        when: 'before any explanation and before anything was computed — the earliest record in ' +
+              'this report',
+        text: 'A: the resonance goes UP. B: at low frequency the impedance falls as frequency ' +
+              'rises. C: the level at 10 kHz goes UP.',
+        translated: true
+      },
+
+      studentScore:
+        '<b>A — wrong direction.</b> The resonance goes DOWN. In f = 1/(2&pi;&radic;(L·C)) the mass ' +
+        'is in the denominator under the square root, so more mass gives a lower resonance — a ' +
+        'thicker cello string sounds lower than a thin one at the same tension. The isolated ' +
+        'L_te–C_te pair fell 8.7 %.<br><br>' +
+        '<b>B — a correct statement, answering a different question.</b> "At low frequency the ' +
+        'impedance falls as frequency rises" is true, and it describes the COMPLIANCE, 1/(&omega;C). ' +
+        'The question asked whether 100 Hz would change. It does not, by +0.010 dB, because at ' +
+        '100 Hz the compliance impedance is about 45× the mass impedance, so the spring is what ' +
+        'resists and a 20 % change in mass is swamped.<br><br>' +
+        '<b>C — wrong direction.</b> 10 kHz FELL by 1.96 dB. The "heavier means louder" instinct ' +
+        'comes from striking things, where a bigger bell does sound louder. Here the ossicles are ' +
+        'not being struck, they are TRANSMITTING: at 10 kHz they must reverse direction 20 000 ' +
+        'times a second, and extra mass makes that harder, so less gets through.<br><br>' +
+        '<b>What this record is worth.</b> Two of three directions were wrong, and both errors are ' +
+        'the same missing step: deciding which impedance dominates a band before deciding which ' +
+        'way the gain moves. Once that step was supplied the student applied it correctly and ' +
+        'unaided in E3. That progression is the reason this first answer is kept verbatim instead ' +
+        'of being replaced by the corrected one.',
+
       aiPrediction:
         '<b>Reasoning from the circuit.</b> <i>Written after the results were known — see the ' +
         'provenance note at the top of this report. It is checkable against the circuit, but it ' +
@@ -94,6 +122,29 @@ window.__EAR_REPORT__ = {
       why: 'C_is is the softness of the joint between incus and stapes. It sits in a SHUNT ' +
            'branch: a parallel route back to the return, so volume velocity taken by it never ' +
            'reaches the cochlea.',
+
+      studentFirstAnswer: {
+        when: 'before seeing any result for E2',
+        text: 'Low frequency: yes, it will change. High frequency: the level will RISE.',
+        translated: true
+      },
+
+      studentScore:
+        '<b>Low frequency — defensible.</b> 100 Hz changed by &minus;0.148 dB. Small in absolute ' +
+        'terms, but fifteen times larger than E1\'s change at the same frequency (+0.010 dB), so ' +
+        '"yes, it will change" is a fair reading rather than a wrong one.<br><br>' +
+        '<b>High frequency — wrong, and this is the useful part.</b> 10 kHz FELL by 6.70 dB, the ' +
+        'largest change anywhere in this report. The step that gets it right: C_is is in a SHUNT ' +
+        'branch; its impedance 1/(&omega;C) falls as frequency rises, and doubling C halves it ' +
+        'again. A smaller shunt impedance diverts MORE volume velocity away from the stapes, so ' +
+        'less arrives and the gain falls.<br><br>' +
+        '<b>The instinct was not baseless.</b> The response does rise — at 1 kHz (+0.211 dB) and ' +
+        '2 kHz (+0.883 dB), and the peak gain rose from 20.43 to 21.03 dB. "It will rise" is right ' +
+        'about the mid band and wrong about the top. Two separate effects: extra leakage dominates ' +
+        'high up, while the retuned joint/stapes resonance (5396 &rarr; 3815 Hz) lifts the middle.<br><br>' +
+        '<b>Pattern worth noticing.</b> The same high-frequency direction was missed in E1. In both ' +
+        'cases the missing step is identical: decide which impedance dominates in that band before ' +
+        'deciding which way the gain moves.',
 
       aiPrediction:
         '<b>Reasoning from the circuit.</b> <i>Written after the results were known — see the ' +
@@ -144,6 +195,27 @@ window.__EAR_REPORT__ = {
       title: 'E3 — ossicular damping R_te ×2',
       why: 'R_te is the damping of the eardrum–malleus–incus block, in the SERIES path. Unlike a ' +
            'mass or a compliance it dissipates energy rather than storing it.',
+
+      studentFirstAnswer: {
+        when: 'before seeing any result for E3',
+        text: 'The mid-frequency band. (Given tentatively, phrased as a question.)',
+        translated: true,
+        note: 'The student wrote a term that reads as either "middle ear" or "mid frequency". ' +
+              'In the context of the question — which frequency band — it was taken as mid ' +
+              'frequency, and that reading was confirmed with them. Recorded as given.'
+      },
+
+      studentScore:
+        '<b>This one is right.</b> The effect is concentrated in the mid band exactly as answered: ' +
+        '&minus;0.471 dB at 1 kHz, against &minus;0.033 dB at 100 Hz and &minus;0.060 dB at 10 kHz, ' +
+        'both about ten times smaller.<br><br>' +
+        'The reason is the one the answer implies. A resistance has an impedance that does not ' +
+        'change with frequency, while the mass and the compliance around it both do. It therefore ' +
+        'only competes where those two cancel each other — near resonance, in the middle of the ' +
+        'band. At 100 Hz the compliance is far larger than 65 &Omega;, and at 10 kHz the mass is; ' +
+        'in both places the extra resistance is swamped.<br><br>' +
+        'This is the same reasoning that was missing in E1 and E2 — establish which impedance ' +
+        'dominates in a band before predicting the change — applied correctly here.',
 
       aiPrediction:
         '<b>Reasoning from the circuit.</b> <i>Written after the results were known — see the ' +
