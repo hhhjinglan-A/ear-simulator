@@ -914,6 +914,40 @@
       </div>`;
     }).join('');
 
+    /* Appendix A — the blind prediction, with its own live computation */
+    const A = R.appendixA;
+    if (A) {
+      const qa = JSON.parse(JSON.stringify(D2)); qa[A.param] = D2[A.param] * A.factor;
+      const ba = MiddleEar.response(D2, FNUM), aa = MiddleEar.response(qa, FNUM);
+      const cb = Combined.response(D1, D2, FNUM), ca = Combined.response(D1, qa, FNUM);
+      const med = x => [...x].sort((p, r) => p - r)[Math.floor(x.length / 2)];
+      html += `<div class="repcard" id="rep-A1">
+        <h3>${A.title} <span class="pill green">blind</span></h3>
+        <div class="rblock r-setup"><div class="rwho">1 · Parameter change and baseline</div>
+          <div>${A.kind} — <code>${A.param}</code> ${D2[A.param].toPrecision(4)} →
+            ${qa[A.param].toPrecision(4)} (×${A.factor}). ${A.why}<br>
+            <b>${A.method}</b></div></div>
+        <div class="rblock r-ai"><div class="rwho">2 · Blind prediction
+          <span class="rwhen">committed to git BEFORE the run — ordering verifiable in the commit history</span>
+          </div><div>${A.blindPrediction}</div></div>
+        <div class="rblock r-result"><div class="rwho">3 · Result
+          <span class="rwhen">recomputed live</span></div>
+          <div class="tablewrap"><table>
+            <tr><th>f (Hz)</th>${fs.map(f => `<th>${f}</th>`).join('')}</tr>
+            <tr><td>before (dB)</td>${fs.map(f0 => `<td class="num">${atOn(FNUM, ba.total, f0, C.db).toFixed(2)}</td>`).join('')}</tr>
+            <tr><td>after (dB)</td>${fs.map(f0 => `<td class="num">${atOn(FNUM, aa.total, f0, C.db).toFixed(2)}</td>`).join('')}</tr>
+            <tr><td><b>change (dB)</b></td>${fs.map(f0 => { const v = atOn(FNUM, aa.total, f0, C.db) - atOn(FNUM, ba.total, f0, C.db); return `<td class="num"><b>${v >= 0 ? '+' : ''}${v.toFixed(3)}</b></td>`; }).join('')}</tr>
+          </table></div>
+          <p style="margin:6px 0 0">Peak ${ba.peakGainDb.toFixed(2)} → <b>${aa.peakGainDb.toFixed(2)} dB</b> ·
+            peak frequency ${ba.fPeak.toFixed(0)} → <b>${aa.fPeak.toFixed(0)} Hz</b> ·
+            cascade loading ratio median ${med(cb.loadingRatio).toFixed(2)} →
+            <b>${med(ca.loadingRatio).toFixed(2)}</b></p></div>
+        <div class="rblock r-post"><div class="rwho">4 · Prediction compared with result
+          <span class="rwhen">written AFTER the run</span></div><div>${A.comparison}</div></div>
+        <div class="rblock r-post"><div class="rwho">5 · What this shows</div><div>${A.lesson}</div></div>
+      </div>`;
+    }
+
     /* the AI error case */
     const c = R.aiCase;
     html += `<div class="aicase"><h3>${c.title}</h3><p>${c.summary}</p>

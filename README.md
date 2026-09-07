@@ -202,12 +202,28 @@ Figures: `figures/fig1_outer_ear.png`, `fig2_middle_ear.png`,
 Predictions were written into `runMiddleEarExperiments.m` **before** each run.
 ΔH in dB.
 
-| | 100 Hz | 500 Hz | 1 kHz | 2 kHz | 4 kHz | 10 kHz |
+All three implementations — MATLAB, the web app and this table — use the same
+4096-point log grid and linear interpolation, and agree to the last digit shown.
+
+| ΔH_middle (dB) | 100 Hz | 500 Hz | 1 kHz | 2 kHz | 4 kHz | 10 kHz |
 |---|---|---|---|---|---|---|
-| **E1** `L_te` +20 % (inertance) | +0.01 | +0.10 | −0.04 | −0.12 | −0.14 | **−1.96** |
-| **E2** `C_is` ×2 (compliance) | −0.15 | −0.10 | +0.21 | +0.88 | +0.04 | **−6.70** |
-| **E3** `R_te` ×2 (resistance) | −0.03 | −0.41 | −0.47 | −0.32 | −0.45 | −0.06 |
-| **E4** `C_cp` ×2 (cavity compliance) | +0.22 | +0.30 | +0.09 | −0.48 | +0.00 | +0.00 |
+| **E1** `L_te` +20 % (inertance) | +0.010 | +0.096 | −0.036 | −0.116 | −0.137 | **−1.957** |
+| **E2** `C_is` ×2 (compliance) | −0.148 | −0.101 | +0.211 | +0.883 | **+0.043** | **−6.698** |
+| **E3** `R_te` ×2 (resistance) | −0.033 | −0.414 | −0.471 | −0.321 | −0.446 | −0.060 |
+| **E4** `C_cp` ×2 (cavity, control) | +0.217 | +0.305 | +0.088 | −0.479 | +0.027 | +0.000 |
+
+| | peak gain (dB) | peak frequency (Hz) | \|z_t\| minimum (Hz) |
+|---|---|---|---|
+| baseline | 20.43 | 1423 | 1738 |
+| **E1** | 20.32 | 1410 | 1741 |
+| **E2** | 21.03 | 1493 | **1723** |
+| **E3** | 20.05 | 1443 | 1738 |
+
+> **Note on provenance.** The written predictions for E1–E3 in the web report were
+> authored *after* the results were known. Their physics is checkable against the
+> circuit, but they were not produced blind. Appendix A on the report page is the
+> one prediction whose ordering is externally verifiable: it was committed to git
+> before the run, and the result was added in a later commit.
 
 **E2 is the most instructive.** A more compliant joint is a bigger *leak*, and
 because the joint is a **shunt** its effect is concentrated where its impedance

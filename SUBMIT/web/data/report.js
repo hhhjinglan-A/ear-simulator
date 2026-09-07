@@ -14,14 +14,29 @@
  * Only human text is stored. Every number is recomputed from the model when
  * the page renders, so the report cannot drift away from the code.
  *
- * Field provenance is explicit and time-ordered. `aiPrediction` is written
- * from the circuit topology alone, BEFORE the run. `comparison` and
- * `corrections` are written AFTER seeing the result and are labelled as such;
- * they are never presented as foresight.
+ * PROVENANCE, STATED HONESTLY.
+ *
+ * Only one field in E1-E3 was written before anything was computed: the
+ * student's own first answer to E1. Everything else, including the
+ * "AI-assisted reasoning" sections, was AUTHORED AFTER the results were
+ * already known. The reasoning in those sections follows from the circuit
+ * alone and a reader can check it without running anything -- but it was not
+ * produced blind, and it is not labelled as though it were.
+ *
+ * Appendix A is different: its prediction was committed to git BEFORE the
+ * experiment was run, so the ordering is externally verifiable in the commit
+ * history. It is the only genuinely blind prediction in this report.
  */
 window.__EAR_REPORT__ = {
   generated: '2026-09-07',
   course: 'MUE 610 Psychoacoustics — AI Build Lab: middle-ear extension',
+  provenanceWarning:
+    'Only the student\'s first answer to E1 was written before anything was computed. The ' +
+    'AI-assisted reasoning sections for E1, E2 and E3 were written after the results were ' +
+    'already known. Their physics follows from the circuit and can be checked independently, ' +
+    'but they were NOT produced blind and are not presented as foresight. Appendix A is the ' +
+    'one genuinely blind prediction: it was committed to git before the run.',
+
   baselineNote:
     'All three experiments start from the published defaults of Pascal et al. (1998) Fig. 1, ' +
     'with the cavity in series and T_r = 17. One parameter is changed at a time; every other ' +
@@ -37,7 +52,9 @@ window.__EAR_REPORT__ = {
            'path, so all the volume velocity passes through it.',
 
       aiPrediction:
-        '<b>Prediction, from the topology alone, before running.</b><br><br>' +
+        '<b>Reasoning from the circuit.</b> <i>Written after the results were known — see the ' +
+        'provenance note at the top of this report. It is checkable against the circuit, but it ' +
+        'is not a blind prediction.</i><br><br>' +
         'A mass has impedance jωL, which grows with frequency, so raising L_te should matter ' +
         'more the higher you go. Three consequences follow:<br><br>' +
         '<b>Low frequency should barely move.</b> At 100 Hz the compliance impedance 1/(ωC_te) is ' +
@@ -79,7 +96,9 @@ window.__EAR_REPORT__ = {
            'reaches the cochlea.',
 
       aiPrediction:
-        '<b>Prediction, from the topology alone, before running.</b><br><br>' +
+        '<b>Reasoning from the circuit.</b> <i>Written after the results were known — see the ' +
+        'provenance note at the top of this report. It is checkable against the circuit, but it ' +
+        'is not a blind prediction.</i><br><br>' +
         'A compliance has impedance 1/(ωC), which falls with frequency, and doubling C halves it. ' +
         'Because this branch is a shunt, a lower branch impedance means more volume velocity is ' +
         'diverted away from the stapes.<br><br>' +
@@ -127,7 +146,9 @@ window.__EAR_REPORT__ = {
            'mass or a compliance it dissipates energy rather than storing it.',
 
       aiPrediction:
-        '<b>Prediction, from the topology alone, before running.</b><br><br>' +
+        '<b>Reasoning from the circuit.</b> <i>Written after the results were known — see the ' +
+        'provenance note at the top of this report. It is checkable against the circuit, but it ' +
+        'is not a blind prediction.</i><br><br>' +
         'A resistance has an impedance that does not depend on frequency, while the reactances ' +
         'around it do. It therefore only competes where the reactances are small — that is, near ' +
         'resonance, where the mass and the compliance cancel each other.<br><br>' +
@@ -160,6 +181,72 @@ window.__EAR_REPORT__ = {
         'than the qualitative behaviour tested here.'
     }
   ],
+
+  /* ------------------------------------------------------------------ */
+  /* APPENDIX A — the one genuinely blind prediction.
+   * This block was committed to git with `result: null` and `comparison: null`
+   * BEFORE the experiment was run. The commit history is the proof of ordering.
+   * The result and comparison were added in a later commit. */
+  appendixA: {
+    id: 'A1', param: 'R_co', factor: 1.5, kind: 'Cochlear load resistance',
+    title: 'Appendix A — cochlear resistance R_co x1.5 (blind prediction)',
+    why: 'R_co is the terminal load: the cochlea itself, essentially a pure resistance. The ' +
+         'output pressure p_c is measured ACROSS this block. It was not used in E1-E3.',
+    method: 'The prediction below was written and committed to git before the experiment was ' +
+            'run. Nothing about the outcome was known when it was written.',
+
+    blindPrediction:
+      '<b>Prediction, written before running.</b><br><br>' +
+      'p_c is measured across Z_cochlea, and the pressure reaching it is the divider ' +
+      'Z3/(Z_stapes + Z3) with Z3 = Z_cochlea. Raising R_co raises Z3, which should make that ' +
+      'ratio LARGER, so I expect the pressure gain to <b>rise</b>, not fall. This is the ' +
+      'opposite of what raising a SERIES impedance does, and it is the point of the ' +
+      'experiment.<br><br>' +
+      '<b>Where it should act.</b> Z_cochlea is R_co in parallel with the helicotrema branch ' +
+      '(R_h + jwL_h). At low frequency the helicotrema branch is only about 850 ohm, less than ' +
+      'R_co = 1211 ohm, so it dominates the parallel pair and changing R_co should do ' +
+      'relatively little. As frequency rises, jwL_h makes that branch large and R_co takes over, ' +
+      'so the effect should GROW with frequency and be largest in the mid and upper band.<br><br>' +
+      '<b>Size.</b> A factor 1.5 on one of two comparable impedances in a divider is a change of ' +
+      'order 1-3 dB, not tenths and not tens. I expect a couple of dB at most.<br><br>' +
+      '<b>Side effect I also expect.</b> Raising the load should raise the middle-ear input ' +
+      'impedance |z_t|, which should IMPROVE the cascade loading ratio |z_t|/Z_canal, since that ' +
+      'ratio is the weakest part of the whole model.<br><br>' +
+      '<b>What I am not sure about.</b> Whether the system peak moves, and in which direction. ' +
+      'The load is not the only thing setting it, so I decline to predict that.',
+
+    /* Added in a LATER commit than the prediction above. */
+    comparison:
+      '<b>Scored against the prediction, after running.</b><br><br>' +
+      '<b>Right — the sign.</b> The pressure gain rose at every frequency tested, +0.74 to ' +
+      '+1.92 dB. Raising a terminal load raises the output, the opposite of raising a series ' +
+      'impedance. This was the main point of the experiment and it held.<br><br>' +
+      '<b>Right — the size.</b> Predicted "of order 1-3 dB, not tenths and not tens". Observed ' +
+      '+0.74 to +1.92 dB.<br><br>' +
+      '<b>Right — the side effect.</b> The cascade loading ratio improved, median 8.91 to 9.20, ' +
+      'as predicted.<br><br>' +
+      '<b>WRONG — where it acts.</b> I predicted the effect would "grow with frequency" and do ' +
+      '"relatively little" at low frequency, because the helicotrema branch (855 ohm at 100 Hz) ' +
+      'is smaller than R_co (1211 ohm) and so dominates the parallel pair. The effect is not ' +
+      'monotonic at all: 100 Hz gained +1.27 dB, one of the LARGEST changes, while 1 kHz gained ' +
+      'only +0.74 dB, the smallest.<br><br>' +
+      'The error in my reasoning is identifiable. I treated "the other branch dominates the ' +
+      'parallel pair" as if it meant "changes to this branch do not matter". It does not. ' +
+      'At 100 Hz the pair is 1211||855 = 501 ohm; with R_co at 1816 it becomes 581 ohm, a 16 % ' +
+      'change. Domination reduces sensitivity but does not remove it, and I had not checked the ' +
+      'arithmetic before asserting the frequency trend.<br><br>' +
+      '<b>Correctly declined.</b> I refused to predict the peak frequency, and it moved from ' +
+      '1423 Hz to 5044 Hz. That is not one peak sliding: raising the load lifted the 4-5 kHz ' +
+      'region by +1.9 dB, enough that the SECOND peak — the joint/stapes resonance near 5 kHz — ' +
+      'overtook the first and became the global maximum. Reporting this as "the peak moved ' +
+      '3.6 kHz" would be misleading; what changed is which of two peaks is taller.',
+
+    lesson:
+      'Three of four claims held and the fourth failed for a reason I can name. That is a more ' +
+      'useful record than a prediction that happened to be right, and it is the only prediction ' +
+      'in this report whose ordering can be checked by anyone: the prediction and the result are ' +
+      'in different commits.'
+  },
 
   /* ------------------------------------------------------------------ */
   aiCase: {

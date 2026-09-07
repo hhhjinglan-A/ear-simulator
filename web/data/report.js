@@ -215,8 +215,37 @@ window.__EAR_REPORT__ = {
       '<b>What I am not sure about.</b> Whether the system peak moves, and in which direction. ' +
       'The load is not the only thing setting it, so I decline to predict that.',
 
-    result: null,
-    comparison: null
+    /* Added in a LATER commit than the prediction above. */
+    comparison:
+      '<b>Scored against the prediction, after running.</b><br><br>' +
+      '<b>Right — the sign.</b> The pressure gain rose at every frequency tested, +0.74 to ' +
+      '+1.92 dB. Raising a terminal load raises the output, the opposite of raising a series ' +
+      'impedance. This was the main point of the experiment and it held.<br><br>' +
+      '<b>Right — the size.</b> Predicted "of order 1-3 dB, not tenths and not tens". Observed ' +
+      '+0.74 to +1.92 dB.<br><br>' +
+      '<b>Right — the side effect.</b> The cascade loading ratio improved, median 8.91 to 9.20, ' +
+      'as predicted.<br><br>' +
+      '<b>WRONG — where it acts.</b> I predicted the effect would "grow with frequency" and do ' +
+      '"relatively little" at low frequency, because the helicotrema branch (855 ohm at 100 Hz) ' +
+      'is smaller than R_co (1211 ohm) and so dominates the parallel pair. The effect is not ' +
+      'monotonic at all: 100 Hz gained +1.27 dB, one of the LARGEST changes, while 1 kHz gained ' +
+      'only +0.74 dB, the smallest.<br><br>' +
+      'The error in my reasoning is identifiable. I treated "the other branch dominates the ' +
+      'parallel pair" as if it meant "changes to this branch do not matter". It does not. ' +
+      'At 100 Hz the pair is 1211||855 = 501 ohm; with R_co at 1816 it becomes 581 ohm, a 16 % ' +
+      'change. Domination reduces sensitivity but does not remove it, and I had not checked the ' +
+      'arithmetic before asserting the frequency trend.<br><br>' +
+      '<b>Correctly declined.</b> I refused to predict the peak frequency, and it moved from ' +
+      '1423 Hz to 5044 Hz. That is not one peak sliding: raising the load lifted the 4-5 kHz ' +
+      'region by +1.9 dB, enough that the SECOND peak — the joint/stapes resonance near 5 kHz — ' +
+      'overtook the first and became the global maximum. Reporting this as "the peak moved ' +
+      '3.6 kHz" would be misleading; what changed is which of two peaks is taller.',
+
+    lesson:
+      'Three of four claims held and the fourth failed for a reason I can name. That is a more ' +
+      'useful record than a prediction that happened to be right, and it is the only prediction ' +
+      'in this report whose ordering can be checked by anyone: the prediction and the result are ' +
+      'in different commits.'
   },
 
   /* ------------------------------------------------------------------ */
