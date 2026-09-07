@@ -1,20 +1,64 @@
-# Middle-Ear Model — extension of an outer-ear simulator
+# Outer + Middle Ear Simulator
 
-MATLAB implementation of the **linear** middle-ear equivalent circuit of
+MUE 610 Psychoacoustics — AI Build Lab. A middle-ear model transcribed from
+Pascal, Bourgeade, Lagier & Legros, *J. Acoust. Soc. Am.* **104**(3), 1509–1516
+(1998), Fig. 1, cascaded with an outer-ear model from the previous assignment.
 
-> J. Pascal, A. Bourgeade, M. Lagier and C. Legros,
-> "Linear and nonlinear model of the human middle ear",
-> *J. Acoust. Soc. Am.* **104**(3), 1509–1516 (1998).
+**▶ [Open the interactive simulator](https://hhhjinglan-a.github.io/ear-simulator/)**
+&nbsp;·&nbsp; **[REPORT.pdf](REPORT.pdf) is the submitted report** — 13 pages,
+all figures included, nothing else needs to be opened.
 
-transcribed from **Figure 1** (circuit + element values, p. 1510) and **Table I**
-(anatomy, p. 1510), and cascaded with an outer-ear model from a previous
-assignment.
+> The model reproduces the paper's own published curves to **1.34 dB rms in
+> magnitude and 7.9° rms in phase** (Fig. 3), and **0.91 dB / 2.5°** (Fig. 2).
+> The JavaScript port agrees with the MATLAB original to **8.1×10⁻¹⁶** relative
+> error over 12 scenarios × 96 frequencies.
 
-Signal path: **pinna/concha → ear canal → eardrum → ossicles → cochlear load**
+---
 
-**The model reproduces the paper's own published curves to 1.34 dB rms
-(Fig. 3, transfer function) and 0.91 dB rms (Fig. 2, input impedance)** — see
-§7. Run `test_vsPaper` to reproduce that comparison.
+## What is in here
+
+Four files and three folders. Nothing is duplicated.
+
+| | What it is | Do you need to open it? |
+|---|---|---|
+| **`REPORT.pdf`** | **The submission.** Everything the assignment asks for, with the five figures embedded. | **Yes — start here** |
+| `REPORT.html` | The source `REPORT.pdf` is generated from. Same content, editable. | No |
+| `README.md` | This file: how to run it, and the full write-up in more detail than the PDF. | Reference |
+| `LICENSE` | MIT | No |
+| `MATLAB_middle_ear_model/` | The MATLAB model — 21 `.m` files | If you want to run it |
+| `web/` | The interactive site — 18 files, no framework, no build step | If you want to read the code |
+| `figures/` | The five generated figures | They are already in the PDF |
+
+To rebuild the PDF after changing `REPORT.html`:
+
+```bash
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless \
+  --no-pdf-header-footer --print-to-pdf=REPORT.pdf REPORT.html
+```
+
+### `MATLAB_middle_ear_model/` — 21 files
+
+| Group | Files |
+|---|---|
+| One per circuit block | `Z_cavity` `Z_eardrum` `Z_ossicles` `Z_joint` `Z_stapes` `Z_cochlea` |
+| The model | `middleEarParams` `middleEarResponse` `combinedEarResponse` `combinedEarIR` |
+| Inherited unchanged from the outer-ear assignment | `outerEarParams` `outerEarResponse` `outerEarIR` `test_outerEar` |
+| Run it | `runAll` `run_middle_ear.command` `combinedEarModel` |
+| Produce results | `generateCombinedFigures` `runMiddleEarExperiments` `runOtitisMedia` `exportWebReference` |
+| Tests | `test_vsPaper` `test_middleEar` `test_audioIR` `test_combinedGui` |
+
+### `web/` — 18 files
+
+`index.html` and `css/style.css`; the physics in `js/complex.js`,
+`js/outerEar.js`, `js/middleEar.js`, `js/combined.js`; plotting, audio and the
+clickable circuit map in `js/plot.js`, `js/audio.js`, `js/diagram.js`; the
+interface in `js/app.js`, `js/paramSpecs.js`, `js/content.js`,
+`js/experiments.js`; MATLAB-generated data in `data/reference.js/.json`; the
+written experiment report in `data/report.js`; and the offline
+web-versus-MATLAB check in `tools/compare.js`.
+
+Most of the folder's size is `data/reference.*` — 220 kB each, carrying the
+complex responses for 12 scenarios at 96 frequencies used to verify the port.
 
 ---
 
