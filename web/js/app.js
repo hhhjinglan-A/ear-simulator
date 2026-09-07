@@ -857,7 +857,8 @@
     const fLC = p => 1 / (2 * Math.PI * Math.sqrt(p.L_te * p.C_te));
     const fJoint = p => 1 / (2 * Math.PI * Math.sqrt((p.L_s + p.L_v) * p.C_is));
 
-    let html = `<div class="warn"><b>How to read the dates on these sections.</b>
+    let html = `<p class="sub" style="margin:0 0 10px"><b>${R.course}</b> &middot; ${R.author}</p>
+      <div class="warn"><b>How to read the dates on these sections.</b>
         ${R.provenanceWarning}</div>
       <div class="note"><b>Baseline for all three experiments.</b> ${R.baselineNote}</div>`;
 

@@ -30,6 +30,7 @@
 window.__EAR_REPORT__ = {
   generated: '2026-09-07',
   course: 'MUE 610 Psychoacoustics — AI Build Lab: middle-ear extension',
+  author: 'JINGLAN HUANG',
   provenanceWarning:
     'Only the student\'s first answer to E1 was written before anything was computed. The ' +
     'AI-assisted reasoning sections for E1, E2 and E3 were written after the results were ' +

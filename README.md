@@ -1,5 +1,7 @@
 # Outer + Middle Ear Simulator
 
+MUE 610 Psychoacoustics — AI Build Lab · **JINGLAN HUANG**
+
 > [!IMPORTANT]
 > ## ⬇︎ Start here: [**REPORT.pdf**](REPORT.pdf)
 >
@@ -42,6 +44,13 @@ To rebuild the PDF after changing `REPORT.html`:
 ```bash
 "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless \
   --no-pdf-header-footer --print-to-pdf=REPORT.pdf REPORT.html
+```
+
+Chrome writes no `/Author` field and silently clears any that was there, so
+the document properties must be stamped back on afterwards (needs `pypdf`):
+
+```bash
+python3 -c "from pypdf import PdfReader,PdfWriter; r=PdfReader('REPORT.pdf'); w=PdfWriter(); [w.add_page(x) for x in r.pages]; w.add_metadata({'/Author':'JINGLAN HUANG','/Title':'Extending an Outer-Ear Simulator into a Middle-Ear Model','/Subject':'MUE 610 Psychoacoustics - AI Build Lab'}); w.write(open('REPORT.pdf','wb'))"
 ```
 
 ### `MATLAB_middle_ear_model/` — 21 files
