@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Outer + Middle Ear Simulator</title>
-<link rel="stylesheet" href="css/style.css?v=1788760818">
+<link rel="stylesheet" href="css/style.css?v=1788762062">
 </head>
 <body>
 
@@ -28,25 +28,29 @@
 
 <!-- ==================== SIMULATOR ==================== -->
 <section id="tab-sim" class="tab on">
-  <div class="onboard" id="onboard">
-    <button class="closeX" id="onboardClose" title="hide">&times;</button>
-    <h2>Start here</h2>
+  <div class="guidebar">
+    <button id="guideToggle" class="sm">▸ Start here — 4 steps</button>
+    <span class="hint">Move one of the three highlighted sliders and watch the black curve.</span>
+  </div>
+  <div class="onboard hidden" id="onboard">
     <ol class="steps">
-      <li><b>Look at the black curve.</b> It is the combined outer + middle ear response.
-          The peak near 3 kHz is what makes speech frequencies loudest at the cochlea.</li>
-      <li><b>Move one of the three highlighted sliders</b> on the left. They are the three
-          parameters the assignment asks you to experiment with — an <i>inertance</i>, a
-          <i>compliance</i> and a <i>loss</i>. Everything else is folded into
-          <i>Advanced</i>; you do not need it to start.</li>
-      <li><b>Press "Set baseline" first</b>, then move a slider. The grey dashed curve stays
-          where you were, so you can see exactly what your change did.</li>
-      <li>When you can predict what a slider will do before you move it, go to the
-          <b>Experiments</b> tab and record it properly.</li>
+      <li><b>Press "Set baseline" first.</b> The grey dashed curve then stays where you were, so
+          you can see exactly what your change did.</li>
+      <li><b>Move one of the three highlighted sliders.</b> They are the inertance, compliance and
+          loss the assignment asks you to experiment with. Everything else is under <i>Advanced</i>.</li>
+      <li><b>Watch the black curve</b> — the combined outer + middle ear response.</li>
+      <li>When you can predict what a slider will do <i>before</i> you move it, go to
+          <b>Experiments</b> and record it.</li>
     </ol>
-    <p class="hint">How to read the three plots: <b>magnitude</b> is how much louder or quieter
-      each frequency gets; <b>phase</b> is how much each frequency is delayed; <b>input
-      impedance</b> is how hard the middle ear is to push — it is what a clinician measures
-      with a tympanometer, not something you hear.</p>
+    <p class="hint"><b>Reading the plots.</b>
+      <b>Magnitude</b> is <i>pressure gain</i>: how much bigger the sound pressure at the cochlea is
+      than at the input, in dB. It is not loudness — loudness is a perceptual quantity that also
+      depends on level and on the listener.
+      <b>Phase</b> is the angle by which each frequency component is shifted. A phase shift is not
+      the same thing as a time delay: a delay would show up as phase falling in proportion to
+      frequency, and the actual delay is the <i>slope</i> of this curve, not its value.
+      <b>Input impedance</b> is how hard the middle ear is to drive; it is what a tympanometer
+      measures, and it is not something you hear.</p>
   </div>
   <div class="layout">
     <aside class="controls">
@@ -63,23 +67,30 @@
     </aside>
 
     <main class="plots">
-      <div class="legendbar" id="legendbar"></div>
+      <div class="plotbar">
+        <div class="viewsel" id="viewSel">
+          <button data-v="mag" class="on">Magnitude</button>
+          <button data-v="phase">Phase</button>
+          <button data-v="z">Input impedance</button>
+          <button data-v="all">All three</button>
+        </div>
+        <div class="legendbar" id="legendbar"></div>
+      </div>
 
-      <div class="card">
-        <h3>Magnitude — 20 Hz – 20 kHz, log axis</h3>
+      <div class="card plotcard" data-v="mag">
+        <h3>Magnitude — pressure gain (dB), 20 Hz – 20 kHz, log axis</h3>
         <canvas id="cvMag" class="plot"></canvas>
       </div>
-      <div class="card">
-        <h3>Phase (degrees, unwrapped)</h3>
+      <div class="card plotcard" data-v="phase" hidden>
+        <h3>Phase — shift in degrees (unwrapped); delay is the <i>slope</i>, not the value</h3>
         <canvas id="cvPhase" class="plot"></canvas>
       </div>
-      <div class="card">
-        <h3>Middle-ear input impedance |z<sub>t</sub>| (Pas/m³)</h3>
+      <div class="card plotcard" data-v="z" hidden>
+        <h3>Middle-ear input impedance |z<sub>t</sub>| (Pa·s/m³) — what a tympanometer measures</h3>
         <canvas id="cvZ" class="plot"></canvas>
       </div>
 
       <div class="card readout">
-        <h3>Readout</h3>
         <div id="readout" class="grid4"></div>
       </div>
     </main>
@@ -89,16 +100,20 @@
 <!-- ==================== EXPERIMENTS ==================== -->
 <section id="tab-exp" class="tab">
   <div class="pad">
-    <h2>Three parameter experiments</h2>
-    <p class="note">Follow the order: <b>write your prediction → read the AI explanation → run → compare and record</b>.
-      Your prediction and observation fields are <b>never auto-filled</b>.</p>
-    <div id="expList"></div>
-    <div class="btnrow">
-      <button id="expExportJson">Export log (JSON)</button>
-      <button id="expExportCsv">Export log (CSV)</button>
-      <button id="expClear" class="ghost">Clear all records</button>
+    <div class="expbar">
+      <div class="viewsel" id="expSel"></div>
+      <div class="btnrow" style="margin:0">
+        <button id="expExportJson" class="sm">Export JSON</button>
+        <button id="expExportCsv" class="sm">Export CSV</button>
+        <button id="expClear" class="sm ghost">Clear records</button>
+      </div>
     </div>
-    <p class="hint zh">Records are stored in this browser only (localStorage). They are lost if you clear site data or switch machine, so export them when you are done.</p>
+    <p class="note">Order: <b>write your prediction → read the reference explanation → run →
+      compare and record</b>. The prediction and observation fields in your own words are never
+      auto-filled.</p>
+    <div id="expList"></div>
+    <p class="hint">Records are stored in this browser only (localStorage). Export them before
+      clearing site data or changing machine.</p>
   </div>
 </section>
 
@@ -106,22 +121,29 @@
 <section id="tab-ome" class="tab">
   <div class="pad">
     <h2>Child baseline and otitis media with effusion</h2>
-    <div class="warn">
-      <b>EXPLORATORY SIMULATION — NOT A VALIDATED CLINICAL MODEL.</b>
-    </div>
-    <div class="card">
-      <h3>Scenario controls</h3>
-      <p class="hint">Presets are the three severities used in the report. Move the sliders to
-        build your own scenario — the derived circuit values and the results update live.</p>
-      <div class="btnrow" id="omePresets"></div>
+    <div class="warn"><b>EXPLORATORY SIMULATION — NOT A VALIDATED CLINICAL MODEL.</b>
+      Every magnitude here is assumed, not measured.</div>
+  </div>
+  <div class="layout">
+    <aside class="controls">
+      <div class="ctl-head"><strong>Scenario</strong>
+        <div class="btnrow" id="omePresets"></div>
+        <p class="hint">Presets are the three severities in the report. Move the sliders to build
+          your own — derived values and results update live.</p>
+      </div>
       <div id="omeControls"></div>
-      <div id="omeDerived" class="derived"></div>
-    </div>
-    <div class="btnrow" id="omeButtons"></div>
-    <div class="card"><h3>Transmission</h3><canvas id="cvOme" class="plot"></canvas></div>
-    <div class="card"><h3>Conductive loss vs healthy child</h3><canvas id="cvOmeLoss" class="plot"></canvas></div>
-    <div id="omeTable"></div>
-    <div id="omeNotes"></div>
+    </aside>
+    <main class="plots">
+      <div class="plotbar"><div class="legendbar" id="omeButtons"></div></div>
+      <div class="card"><h3>Transmission — pressure gain (dB)</h3><canvas id="cvOme" class="plot"></canvas></div>
+      <div class="card"><h3>Conductive loss vs healthy child (dB)</h3><canvas id="cvOmeLoss" class="plot"></canvas></div>
+      <div class="card"><div id="omeDerived" class="derived"></div></div>
+    </main>
+  </div>
+  <div class="pad">
+    <details class="fold"><summary>What changes, on what evidence, and why this does not reproduce the clinic</summary>
+      <div id="omeTable"></div><div id="omeNotes"></div>
+    </details>
   </div>
 </section>
 
@@ -194,17 +216,17 @@
   </div>
 </section>
 
-<script src="data/reference.js?v=1788760818"></script>
-<script src="js/complex.js?v=1788760818"></script>
-<script src="js/outerEar.js?v=1788760818"></script>
-<script src="js/middleEar.js?v=1788760818"></script>
-<script src="js/combined.js?v=1788760818"></script>
-<script src="js/plot.js?v=1788760818"></script>
-<script src="js/paramSpecs.js?v=1788760818"></script>
-<script src="js/diagram.js?v=1788760818"></script>
-<script src="js/content.js?v=1788760818"></script>
-<script src="js/audio.js?v=1788760818"></script>
-<script src="js/experiments.js?v=1788760818"></script>
-<script src="js/app.js?v=1788760818"></script>
+<script src="data/reference.js?v=1788762121"></script>
+<script src="js/complex.js?v=1788762121"></script>
+<script src="js/outerEar.js?v=1788762121"></script>
+<script src="js/middleEar.js?v=1788762121"></script>
+<script src="js/combined.js?v=1788762121"></script>
+<script src="js/plot.js?v=1788762121"></script>
+<script src="js/paramSpecs.js?v=1788762121"></script>
+<script src="js/diagram.js?v=1788762121"></script>
+<script src="js/content.js?v=1788762121"></script>
+<script src="js/audio.js?v=1788762121"></script>
+<script src="js/experiments.js?v=1788762121"></script>
+<script src="js/app.js?v=1788762121"></script>
 </body>
 </html>

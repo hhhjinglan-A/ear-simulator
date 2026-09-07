@@ -81,8 +81,8 @@ code{background:#f1f3f5;padding:1px 4px;border-radius:3px;font-size:12px}
 @media(max-width:960px){.layout{grid-template-columns:1fr}.controls{position:static;max-height:none}}
 
 /* onboarding */
-.onboard{position:relative;background:#eef4fb;border:1px solid #cfe0f3;border-radius:8px;
-  margin:14px 14px 0;padding:12px 16px}
+.onboard{background:#eef4fb;border:1px solid #cfe0f3;border-radius:8px;
+  margin:0 14px;padding:10px 16px}
 .onboard h2{margin:0 0 6px;font-size:15px}
 .onboard .steps{margin:0 0 6px;padding-left:22px}
 .onboard .steps li{margin:4px 0}
@@ -115,3 +115,59 @@ code{background:#f1f3f5;padding:1px 4px;border-radius:3px;font-size:12px}
 .tagd{font-size:10px;border-radius:99px;padding:1px 6px;margin-left:5px;vertical-align:1px}
 .tagd.derived{background:#2f7d32;color:#fff}
 .tagd.assumed{background:#b8860b;color:#fff}
+
+/* ---- compact guide bar ---- */
+.guidebar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px 6px}
+.guidebar .hint{margin:0}
+.onboard.hidden{display:none}
+.onboard .steps{margin:2px 0 6px;padding-left:20px}
+.onboard .steps li{margin:3px 0}
+
+/* ---- plot view switcher ---- */
+.plotbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+.viewsel{display:flex;gap:2px;flex-wrap:wrap}
+.viewsel button{border:1px solid var(--line);background:#fff;padding:4px 10px;font-size:12px;
+  border-radius:5px;cursor:pointer;white-space:nowrap}
+.viewsel button.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.plotbar .legendbar{border:0;padding:0;background:transparent;flex:1 1 240px;min-width:0}
+.plotcard[hidden]{display:none}
+/* one plot at a time fills the viewport, so params and result are both visible */
+.plotcard canvas.plot{height:46vh;min-height:260px}
+.plots.showall .plotcard canvas.plot{height:250px;min-height:0}
+
+/* ---- experiments, one at a time ---- */
+.expbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  margin-bottom:8px}
+.exp[hidden]{display:none}
+
+/* ---- collapsible long sections ---- */
+details.fold{background:var(--panel);border:1px solid var(--line);border-radius:8px;margin:10px 0}
+details.fold>summary{cursor:pointer;padding:9px 12px;font-weight:600;font-size:13px;list-style:none}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary:before{content:"▸ ";color:var(--mut)}
+details.fold[open]>summary:before{content:"▾ "}
+details.fold>div,details.fold>table{padding:0 12px 12px}
+
+/* ---- no horizontal overflow at any width or zoom ----
+   The rules below fix the CAUSES (flex items that refuse to shrink, wide
+   tables, the SVG). body{overflow-x:hidden} is deliberately NOT used, because
+   it hides overflow instead of removing it and silently clips content. */
+html,body{max-width:100%}
+.pad,.card,.controls,.plots,.blockinfo{min-width:0}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{table-layout:auto;word-break:normal;overflow-wrap:anywhere}
+pre.mono{overflow-x:auto;white-space:pre;font-size:11px}
+#diagramWrap{overflow-x:auto}
+#diagramWrap svg{min-width:760px}
+.grid4{grid-template-columns:repeat(auto-fit,minmax(165px,1fr))}
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .controls{position:static;max-height:none}
+  .plotcard canvas.plot{height:320px}
+}
+
+.refcheck{margin-top:8px;background:#fbf7ee;border-left:3px solid var(--amber);
+  padding:7px 10px;border-radius:0 5px 5px 0;font-size:12.5px}
+.refcheck ul{margin:4px 0 0;padding-left:18px}
+.refcheck li{margin:3px 0}

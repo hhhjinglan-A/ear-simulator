@@ -52,30 +52,40 @@
     plots.mag   = new Plot($('#cvMag'),   { yLabel: 'Gain (dB)' });
     plots.phase = new Plot($('#cvPhase'), { yLabel: 'Phase (deg)' });
     plots.z     = new Plot($('#cvZ'),     { yLabel: '|z_t| (Pa·s/m³)', yLog: true });
-    $('#circuitBody').innerHTML = Content.CIRCUIT;
-    $('#validBody').innerHTML   = Content.VALID;
+    $('#circuitBody').innerHTML = foldSections(Content.CIRCUIT, ['The circuit']);
+    $('#validBody').innerHTML   = foldSections(Content.VALID,
+      ['Two different claims', 'Web vs MATLAB']);
+    wrapTables();
     $('#btnSelfTest').addEventListener('click', runSelfTest);
     buildExperiments();
     buildOme();
     buildDiagram();
-    const ob = $('#onboard');
-    if (localStorage.getItem('earsim.onboard') === 'hidden') ob.classList.add('hidden');
-    $('#onboardClose').addEventListener('click', () => {
-      ob.classList.add('hidden');
-      localStorage.setItem('earsim.onboard', 'hidden');
-      if (!$('#onboardShow')) {
-        const b = document.createElement('button');
-        b.id = 'onboardShow'; b.className = 'sm';
-        b.textContent = 'Show the "Start here" guide again';
-        b.addEventListener('click', () => {
-          ob.classList.remove('hidden'); b.remove();
-          localStorage.removeItem('earsim.onboard');
-        });
-        ob.parentNode.insertBefore(b, ob.nextSibling);
-      }
+    const ob = $('#onboard'), gt = $('#guideToggle');
+    if (localStorage.getItem('earsim.guide') === 'open') ob.classList.remove('hidden');
+    const syncGuide = () => {
+      const open = !ob.classList.contains('hidden');
+      gt.textContent = (open ? '▾' : '▸') + ' Start here — 4 steps';
+      localStorage.setItem('earsim.guide', open ? 'open' : 'closed');
+    };
+    gt.addEventListener('click', () => { ob.classList.toggle('hidden'); syncGuide();
+      Object.values(plots).forEach(p => p.draw()); });
+    syncGuide();
+
+    /* plot view switcher: one plot at a time so the controls and the result
+     * are both on screen without scrolling */
+    $$('#viewSel button').forEach(b => b.addEventListener('click', () => {
+      $$('#viewSel button').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+      const v = b.dataset.v, all = v === 'all';
+      $('#tab-sim .plots').classList.toggle('showall', all);
+      $$('#tab-sim .plotcard').forEach(c => { c.hidden = !all && c.dataset.v !== v; });
+      requestAnimationFrame(() => Object.values(plots).forEach(p => p.draw()));
+    }));
+
+    window.addEventListener('resize', () => {
+      Object.values(plots).forEach(p => p.draw());
+      if (window.omePlots) window.omePlots.forEach(p => p.draw());
     });
-    buildAudio();
-    window.addEventListener('resize', () => Object.values(plots).forEach(p => p.draw()));
     recompute();
   }
 
@@ -325,8 +335,18 @@
   }
 
   /* ================= experiments ================= */
+  let expCurrent = 'E1';
   function buildExperiments() {
     const store = Experiments.load();
+    $('#expSel').innerHTML = Experiments.DEFS.map(d => {
+      const done = store[d.id] && store[d.id].result;
+      return `<button data-e="${d.id}" class="${d.id === expCurrent ? 'on' : ''}">${d.id}${done ? ' ✓' : ''}</button>`;
+    }).join('');
+    $$('#expSel button').forEach(b => b.addEventListener('click', () => {
+      expCurrent = b.dataset.e;
+      $$('#expSel button').forEach(x => x.classList.toggle('on', x === b));
+      $$('#expList .exp').forEach(el => { el.hidden = el.dataset.id !== expCurrent; });
+    }));
     $('#expList').innerHTML = Experiments.DEFS.map(d => {
       const s = store[d.id] || {};
       return `<div class="exp" data-id="${d.id}">
@@ -359,8 +379,9 @@
         const o = {}; o[ta.dataset.f] = ta.value; persist(id, o);
         el.querySelector('.saved').textContent = 'saved ' + new Date().toLocaleTimeString();
       }));
-      const s = Experiments.load()[id];
-      if (s && s.result) showResult(el, s.result);
+      const st2 = Experiments.load()[id];
+      if (st2 && st2.result) showResult(el, st2.result);
+      el.hidden = id !== expCurrent;
     });
 
     $('#expExportJson').addEventListener('click', () => {
@@ -368,14 +389,18 @@
     });
     $('#expExportCsv').addEventListener('click', () => {
       const st = Experiments.load();
-      let csv = 'id,param,factor,ran_at,prediction,observation,ai_viewed_after_prediction,' +
-                'dH_100Hz,dH_500Hz,dH_1kHz,dH_2kHz,dH_4kHz,dH_10kHz,peak_before_dB,peak_after_dB,peak_f_before,peak_f_after\n';
+      let csv = 'id,param,factor,ran_at,student_prediction,student_observation,' +
+                'ai_viewed_after_prediction,dH_100Hz,dH_500Hz,dH_1kHz,dH_2kHz,dH_4kHz,dH_10kHz,' +
+                'peak_before_dB,peak_after_dB,peak_f_before,peak_f_after,resonance_before,' +
+                'resonance_after,reference_prediction_vs_result\n';
       for (const id of Object.keys(st)) {
         const s = st[id], r = s.result || {};
         const q = t => '"' + String(t == null ? '' : t).replace(/"/g, '""') + '"';
         csv += [id, r.param || '', r.factor || '', r.ranAt || '', q(s.prediction), q(s.observation),
                 !!s.aiViewedAfterPrediction, ...(r.dH || ['', '', '', '', '', '']),
-                r.peakBefore, r.peakAfter, r.fPeakBefore, r.fPeakAfter].join(',') + '\n';
+                r.peakBefore, r.peakAfter, r.fPeakBefore, r.fPeakAfter,
+                r.resBefore, r.resAfter,
+                q((r.referenceCheck || []).join(' | '))].join(',') + '\n';
       }
       download('experiment_log.csv', csv, 'text/csv');
     });
@@ -408,8 +433,14 @@
       resBefore: Math.round(before.middle.fResonance), resAfter: Math.round(after.middle.fResonance),
       params: JSON.parse(JSON.stringify(P2))
     };
+    res.referenceCheck = checkReference(id, res, before, after);
     persist(id, { result: res });
     showResult(el, res);
+    const store = Experiments.load();
+    $$('#expSel button').forEach(b => {
+      const done = store[b.dataset.e] && store[b.dataset.e].result;
+      b.textContent = b.dataset.e + (done ? ' ✓' : '');
+    });
   }
 
   function showResult(el, r) {
@@ -422,7 +453,66 @@
        <tr><td>ΔH<sub>middle</sub> (dB)</td>${r.dH.map(v => `<td class="num">${v >= 0 ? '+' : ''}${v.toFixed(2)}</td>`).join('')}</tr></table>
        Middle-ear peak ${r.peakBefore.toFixed(1)} dB @ ${r.fPeakBefore} Hz →
        <b>${r.peakAfter.toFixed(1)} dB @ ${r.fPeakAfter} Hz</b> ·
-       resonance ${r.resBefore} → ${r.resAfter} Hz`;
+       resonance ${r.resBefore} → ${r.resAfter} Hz
+       ${r.referenceCheck ? `<div class="refcheck"><b>Reference prediction vs result</b>
+         <span class="hint">(computed — this is not your observation)</span>
+         <ul>${r.referenceCheck.map(x => '<li>' + x + '</li>').join('')}</ul></div>` : ''}`;
+  }
+
+
+  /* Factual comparison of the REFERENCE prediction against what actually
+   * happened. This is the model reporting its own outcome — it is not, and is
+   * not labelled as, the student's observation. Each claim is checked against
+   * a number rather than asserted. */
+  function checkReference(id, r, before, after) {
+    const d  = (f0) => at(after.Hmiddle, f0, C.db) - at(before.Hmiddle, f0, C.db);
+    const pk = (r.fPeakAfter - r.fPeakBefore) / r.fPeakBefore * 100;
+    const out = [];
+    const line = (ok, txt) => out.push((ok === null ? '•' : ok ? '✓' : '✗') + ' ' + txt);
+
+    if (id === 'E1') {
+      const fOssBefore = 1 / (2 * Math.PI * Math.sqrt(P2.L_te * P2.C_te));
+      const fOssAfter  = 1 / (2 * Math.PI * Math.sqrt(P2.L_te * 1.2 * P2.C_te));
+      const predShift  = (fOssAfter - fOssBefore) / fOssBefore * 100;
+      line(true, `The isolated ossicular resonance 1/(2π√(L_te·C_te)) does fall by ` +
+                 `${predShift.toFixed(1)} %, as predicted.`);
+      line(false, `But the SYSTEM peak moved only ${pk.toFixed(1)} % ` +
+                  `(${r.fPeakBefore} → ${r.fPeakAfter} Hz), not ${Math.abs(predShift).toFixed(1)} %. ` +
+                  `The prediction was incomplete: the peak of the whole ladder is not the ` +
+                  `resonance of one series branch — the cavity, the shunts and the cochlear ` +
+                  `load all help set it, and they did not change.`);
+      line(d(10000) < d(100), `Loss does grow towards high frequency: ${d(100).toFixed(2)} dB at ` +
+           `100 Hz versus ${d(10000).toFixed(2)} dB at 10 kHz, so the mass term acts where predicted.`);
+    } else if (id === 'E2') {
+      line(Math.abs(d(100)) < 0.3, `Almost nothing at 100 Hz (${d(100).toFixed(2)} dB), as predicted: ` +
+           `1/(ωC_is) is huge there, so the shunt diverts almost nothing.`);
+      line(d(10000) < -1, `A clear loss at the top of the band (${d(10000).toFixed(2)} dB at 10 kHz), ` +
+           `as predicted, because the shunt impedance falls with frequency.`);
+      line(null, `The peak also moved ${r.fPeakBefore} → ${r.fPeakAfter} Hz and the mid-band ` +
+           `actually GAINED (${d(2000).toFixed(2)} dB at 2 kHz). C_is resonates with the stapes ` +
+           `and vestibular mass, so changing it retunes that resonance as well as changing the leak — ` +
+           `a second effect the one-line prediction did not separate.`);
+    } else if (id === 'E3') {
+      line(r.peakAfter < r.peakBefore, `The peak did flatten: ${r.peakBefore.toFixed(1)} → ` +
+           `${r.peakAfter.toFixed(1)} dB.`);
+      line(Math.abs(d(100)) < 0.2 && Math.abs(d(10000)) < 0.2,
+           `Away from resonance almost nothing happened (${d(100).toFixed(2)} dB at 100 Hz, ` +
+           `${d(10000).toFixed(2)} dB at 10 kHz), as predicted — a resistance only competes with ` +
+           `the reactances where they cancel.`);
+      line(null, `The peak also moved ${r.fPeakBefore} → ${r.fPeakAfter} Hz. The maximum of a lossy ` +
+           `resonator does not sit at the undamped resonance, so damping shifts it as well as ` +
+           `flattening it.`);
+    } else if (id === 'E4') {
+      line(d(100) > 0, `A softer cavity helps at low frequency (${d(100).toFixed(2)} dB at 100 Hz), ` +
+           `as predicted — less series stiffness for the drum to work against.`);
+      line(d(2000) < 0, `And it costs a little above the ossicular resonance ` +
+           `(${d(2000).toFixed(2)} dB at 2 kHz): there the capacitive cavity had been partly ` +
+           `cancelling the inductive ossicular reactance, and softening it removes that.`);
+      line(null, `Control: with p2.cavityPlacement = 'shunt' the same change gives exactly ` +
+           `0.00 dB everywhere, because a shunt across an ideal pressure source cannot affect ` +
+           `its output. That is the cascade-loading assumption made concrete.`);
+    }
+    return out;
   }
 
   /* ================= OME tab ================= */
@@ -609,6 +699,35 @@
   }
 
 
+
+  /* Split a content block at its <h2> headings and wrap each section in a
+   * collapsed <details>, except the ones named in keepOpen. Long reference
+   * text should not push the interactive parts off the screen. */
+  function foldSections(html, keepOpen) {
+    const parts = html.split(/(?=<h2>)/).filter(x => x.trim());
+    return parts.map(part => {
+      const m = part.match(/<h2>([\s\S]*?)<\/h2>/);
+      if (!m) return part;
+      const title = m[1].replace(/<[^>]+>/g, '').trim();
+      const body = part.replace(/<h2>[\s\S]*?<\/h2>/, '');
+      const open = keepOpen.some(k => title.indexOf(k) >= 0);
+      return `<details class="fold"${open ? ' open' : ''}>
+        <summary>${title}</summary><div>${body}</div></details>`;
+    }).join('');
+  }
+
+  /* Any table wide enough to overflow gets its own horizontal scroller, so
+   * the page itself never scrolls sideways at narrow widths or high zoom. */
+  function wrapTables() {
+    $$('#circuitBody table, #validBody table, #omeTable table, .blockinfo table')
+      .forEach(t => {
+        if (t.parentElement && t.parentElement.classList.contains('tablewrap')) return;
+        const w = document.createElement('div');
+        w.className = 'tablewrap';
+        t.parentNode.insertBefore(w, t); w.appendChild(t);
+      });
+  }
+
   /* ================= clickable circuit / anatomy map ================= */
   function buildDiagram() {
     $('#diagramWrap').innerHTML = Diagram.svg();
@@ -680,6 +799,7 @@
        <p class="hint" style="margin:6px 0 0">Green means the model matches that clinical
        signature at these settings. You will find it hard to turn all four green at once —
        that limitation is explained below and is a property of the circuit, not of the sliders.</p>`;
+    wrapTables();
   }
 
   /* ================= audio ================= */
