@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Outer + Middle Ear Simulator</title>
-<link rel="stylesheet" href="css/style.css?v=1788762794">
+<link rel="stylesheet" href="css/style.css?v=1788769076">
 </head>
 <body>
 
@@ -19,7 +19,8 @@
 
 <nav class="tabs" id="tabs">
   <button data-tab="sim"     class="on">Simulator</button>
-  <button data-tab="exp">Experiments</button>
+  <button data-tab="report">Experiment report</button>
+  <button data-tab="exp">Experiments (try it yourself)</button>
   <button data-tab="ome">Child / Otitis media</button>
   <button data-tab="circuit">Circuit &amp; sources</button>
   <button data-tab="valid">Validation &amp; AI log</button>
@@ -103,6 +104,20 @@
 </section>
 
 <!-- ==================== EXPERIMENTS ==================== -->
+<section id="tab-report" class="tab">
+  <div class="pad">
+    <h2>Experiment report — the three required experiments</h2>
+    <p class="note">This is the <b>submitted report</b>. It is stored in the repository, so it is
+      the same for everyone who opens this page and needs nothing typed in.
+      To <b>change parameters and try your own</b>, use the
+      <a href="#" data-goto="exp">Experiments</a> tab — records made there are yours and stay in
+      your own browser.</p>
+    <p class="hint">Every number below is <b>recomputed from the model as this page loads</b>, so
+      the report cannot drift away from the code. The text records who said what, and when.</p>
+    <div id="reportBody"></div>
+  </div>
+</section>
+
 <section id="tab-exp" class="tab">
   <div class="pad">
     <div class="expbar">
@@ -113,6 +128,9 @@
         <button id="expClear" class="sm ghost">Clear records</button>
       </div>
     </div>
+    <p class="note"><b>This is the interactive tool, not the submitted report.</b> Anything you
+      record here is saved in your own browser only. The finished three experiments are on the
+      <a href="#" data-goto="report">Experiment report</a> tab.</p>
     <p class="note">Order: <b>write your prediction → read the reference explanation → run →
       compare and record</b>. The prediction and observation fields in your own words are never
       auto-filled.</p>
@@ -221,17 +239,18 @@
   </div>
 </section>
 
-<script src="data/reference.js?v=1788762822"></script>
-<script src="js/complex.js?v=1788762822"></script>
-<script src="js/outerEar.js?v=1788762822"></script>
-<script src="js/middleEar.js?v=1788762822"></script>
-<script src="js/combined.js?v=1788762822"></script>
-<script src="js/plot.js?v=1788762822"></script>
-<script src="js/paramSpecs.js?v=1788762822"></script>
-<script src="js/diagram.js?v=1788762822"></script>
-<script src="js/content.js?v=1788762822"></script>
-<script src="js/audio.js?v=1788762822"></script>
-<script src="js/experiments.js?v=1788762822"></script>
-<script src="js/app.js?v=1788762822"></script>
+<script src="data/reference.js?v=1788769076"></script>
+<script src="js/complex.js?v=1788769076"></script>
+<script src="js/outerEar.js?v=1788769076"></script>
+<script src="js/middleEar.js?v=1788769076"></script>
+<script src="js/combined.js?v=1788769076"></script>
+<script src="js/plot.js?v=1788769076"></script>
+<script src="js/paramSpecs.js?v=1788769076"></script>
+<script src="data/report.js?v=1788769076"></script>
+<script src="js/diagram.js?v=1788769076"></script>
+<script src="js/content.js?v=1788769076"></script>
+<script src="js/audio.js?v=1788769076"></script>
+<script src="js/experiments.js?v=1788769076"></script>
+<script src="js/app.js?v=1788769076"></script>
 </body>
 </html>

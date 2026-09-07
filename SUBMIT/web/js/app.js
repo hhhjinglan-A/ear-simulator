@@ -57,6 +57,7 @@
       ['Two different claims', 'Web vs MATLAB']);
     wrapTables();
     $('#btnSelfTest').addEventListener('click', runSelfTest);
+    buildReport();
     buildExperiments();
     buildOme();
     buildDiagram();
@@ -91,6 +92,13 @@
 
   /* ================= tabs ================= */
   function buildTabs() {
+    document.addEventListener('click', ev => {
+      const a = ev.target.closest('[data-goto]');
+      if (!a) return;
+      ev.preventDefault();
+      const b = document.querySelector(`#tabs button[data-tab="${a.dataset.goto}"]`);
+      if (b) b.click();
+    });
     $$('#tabs button').forEach(b => b.addEventListener('click', () => {
       $$('#tabs button').forEach(x => x.classList.remove('on'));
       $$('.tab').forEach(x => x.classList.remove('on'));
@@ -816,6 +824,75 @@
         w.className = 'tablewrap';
         t.parentNode.insertBefore(w, t); w.appendChild(t);
       });
+  }
+
+
+  /* ================= submitted experiment report =================
+   * Rendered from data/report.js, which is committed to the repository, so a
+   * visitor sees the finished experiments without typing anything. All
+   * numbers are recomputed here from the model rather than stored, so the
+   * report and the code cannot disagree. */
+  function buildReport() {
+    const R = window.__EAR_REPORT__;
+    if (!R) { $('#reportBody').innerHTML = '<div class="warn">report data not loaded</div>'; return; }
+    const fs = [100, 500, 1000, 2000, 4000, 10000];
+
+    $('#reportBody').innerHTML = R.experiments.map(e => {
+      const q2 = JSON.parse(JSON.stringify(D2));
+      q2[e.param] = D2[e.param] * e.factor;
+      const before = MiddleEar.response(D2, F);
+      const after  = MiddleEar.response(q2, F);
+      const dH = fs.map(f0 => at(after.total, f0, C.db) - at(before.total, f0, C.db));
+      const fLC = p => 1 / (2 * Math.PI * Math.sqrt(p.L_te * p.C_te));
+
+      const done = !!(e.studentFirstAnswer && e.postHoc);
+      const block = (cls, who, when, txt) => txt ? `
+        <div class="rblock ${cls}">
+          <div class="rwho">${who}<span class="rwhen">${when}</span></div>
+          <div>${txt.replace(/\n\n/g, '<br><br>')}</div>
+        </div>` : '';
+
+      return `<div class="repcard">
+        <h3>${e.title} <span class="pill ${done ? 'green' : 'grey'}">${done ? 'complete' : 'prediction pending'}</span></h3>
+        <p class="hint">${e.kind} · changes <code>${e.param}</code> from
+          ${(D2[e.param]).toPrecision(4)} to ${q2[e.param].toPrecision(4)} (×${e.factor}),
+          starting from the published defaults. <br>${e.question}</p>
+
+        ${block('r-student', 'Student — first answer', e.studentFirstAnswer ? e.studentFirstAnswer.when : '',
+                e.studentFirstAnswer ? e.studentFirstAnswer.text : null)}
+        ${block('r-ai', 'AI-assisted explanation', 'after the first answer, before running',
+                e.aiExplanation)}
+        ${block('r-student', 'Student — revised prediction', e.studentRevised ? e.studentRevised.when : '',
+                e.studentRevised ? e.studentRevised.text : null)}
+
+        <div class="rblock r-result">
+          <div class="rwho">Result<span class="rwhen">computed from the model just now</span></div>
+          <div class="tablewrap"><table>
+            <tr><th>f (Hz)</th>${fs.map(f => `<th>${f}</th>`).join('')}</tr>
+            <tr><td>pressure gain before (dB)</td>${fs.map(f0 => `<td class="num">${at(before.total, f0, C.db).toFixed(2)}</td>`).join('')}</tr>
+            <tr><td>pressure gain after (dB)</td>${fs.map(f0 => `<td class="num">${at(after.total, f0, C.db).toFixed(2)}</td>`).join('')}</tr>
+            <tr><td><b>change (dB)</b></td>${dH.map(v => `<td class="num"><b>${v >= 0 ? '+' : ''}${v.toFixed(3)}</b></td>`).join('')}</tr>
+          </table></div>
+          <p style="margin:6px 0 0">
+            Peak pressure gain ${before.peakGainDb.toFixed(2)} → <b>${after.peakGainDb.toFixed(2)} dB</b> ·
+            system peak ${before.fPeak.toFixed(0)} → <b>${after.fPeak.toFixed(0)} Hz</b>
+            (${((after.fPeak - before.fPeak) / before.fPeak * 100).toFixed(1)} %) ·
+            |z_t| minimum ${before.fResonance.toFixed(0)} → ${after.fResonance.toFixed(0)} Hz
+            ${e.param === 'L_te' ? `<br><span class="hint">For contrast, the LOCAL resonance of the
+              isolated L_te–C_te pair, which is not the system peak:
+              ${fLC(D2).toFixed(0)} → ${fLC(q2).toFixed(0)} Hz
+              (${((fLC(q2) - fLC(D2)) / fLC(D2) * 100).toFixed(1)} %).</span>` : ''}
+          </p>
+        </div>
+
+        ${block('r-post', 'Analysis', 'written AFTER seeing the result — not a prediction', e.postHoc)}
+        ${!done ? `<div class="rblock r-pending"><div class="rwho">Not yet written</div>
+          <div>The student's first answer for this experiment has not been recorded yet. The
+          numbers above are already computed; only the written prediction and analysis are
+          outstanding.</div></div>` : ''}
+      </div>`;
+    }).join('');
+    wrapTables();
   }
 
   /* ================= clickable circuit / anatomy map ================= */
