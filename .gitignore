@@ -8,8 +8,10 @@ codegen/
 # macOS
 .DS_Store
 
-# Papers are copyrighted and must not be redistributed
+# Papers are copyrighted and must not be redistributed.
+# REPORT.pdf is this project's own report and IS published.
 *.pdf
+!REPORT.pdf
 
 # Local exports
 combined_ear_response.csv
