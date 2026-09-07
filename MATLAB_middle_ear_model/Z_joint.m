@@ -9,8 +9,9 @@ function Z = Z_joint(f, p2)
 %
 %   Internal topology:  o--[R_is]--[C_is]--o   (to ground)
 %
-%   The joint is a dead end, not a link in the chain: motion that goes into
-%   flexing the incudo-stapedial joint never reaches the stapes. At low
+%   The joint sits in a shunt branch, not as a link in the chain: motion that
+%   goes into flexing the incudo-stapedial joint is diverted and never reaches
+%   the stapes. At low
 %   frequency 1/(w*C_is) is huge and nothing leaks; towards 20 kHz the
 %   branch impedance falls to R_is = 170 ohm, which is small compared with
 %   the cochlear load, so most of the drive is short-circuited away. That

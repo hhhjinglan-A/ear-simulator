@@ -57,6 +57,23 @@
     $('#btnSelfTest').addEventListener('click', runSelfTest);
     buildExperiments();
     buildOme();
+    buildDiagram();
+    const ob = $('#onboard');
+    if (localStorage.getItem('earsim.onboard') === 'hidden') ob.classList.add('hidden');
+    $('#onboardClose').addEventListener('click', () => {
+      ob.classList.add('hidden');
+      localStorage.setItem('earsim.onboard', 'hidden');
+      if (!$('#onboardShow')) {
+        const b = document.createElement('button');
+        b.id = 'onboardShow'; b.className = 'sm';
+        b.textContent = 'Show the "Start here" guide again';
+        b.addEventListener('click', () => {
+          ob.classList.remove('hidden'); b.remove();
+          localStorage.removeItem('earsim.onboard');
+        });
+        ob.parentNode.insertBefore(b, ob.nextSibling);
+      }
+    });
     buildAudio();
     window.addEventListener('resize', () => Object.values(plots).forEach(p => p.draw()));
     recompute();
@@ -75,9 +92,9 @@
   }
 
   /* ================= controls ================= */
-  function ctlHTML(key, label, unit, min, max, scale, dec, zh, val) {
+  function ctlHTML(key, label, unit, min, max, scale, dec, zh, val, isKey) {
     const dv = (val * scale);
-    return `<div class="p" data-key="${key}">
+    return `<div class="p${isKey ? ' keyparam' : ''}" data-key="${key}">
       <div class="lab"><span class="nm">${label}</span>
         <span class="val"><span class="cur">${dv.toFixed(dec)}</span> ${unit}</span></div>
       <div class="desc zh">${zh}</div>
@@ -87,10 +104,30 @@
       </div></div>`;
   }
 
+  // The three parameters the assignment's experiments use. Shown first and
+  // open by default, so the page opens with three sliders rather than 38.
+  const KEY = [['L_te', 'E1 inertance'], ['C_is', 'E2 compliance'], ['R_te', 'E3 loss']];
+
   function buildControls() {
-    let h = `<details class="grp" open><summary>Outer ear (14)</summary><div class="body">`;
-    for (const s of ParamSpecs.OUTER)
-      h += ctlHTML('o:' + s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], P1[s[0]]);
+    const midSpec = k => ParamSpecs.MIDDLE.flatMap(g => g[2]).find(x => x[0] === k);
+
+    let h = `<details class="grp key" open><summary>Start with these three</summary>
+      <div class="body">
+      <p class="hint">One inertance, one compliance and one loss &mdash; the three the assignment
+      asks you to experiment with. Change one at a time.</p>`;
+    for (const [k, tag] of KEY) {
+      const sp = midSpec(k);
+      h += ctlHTML('m:' + k, sp[1] + `<span class="tagexp">${tag}</span>`,
+                   sp[2], D2[k] * 0.5, D2[k] * 2, sp[3], sp[4], sp[5], P2[k], true);
+    }
+    h += `</div></details>`;
+
+    h += `<details class="grp"><summary>Advanced &mdash; all other parameters</summary>
+      <div class="body" style="padding:4px 2px">`;
+
+    h += `<details class="grp"><summary>Outer ear (14)</summary><div class="body">`;
+    for (const sp of ParamSpecs.OUTER)
+      h += ctlHTML('o:' + sp[0], sp[1], sp[2], sp[3], sp[4], sp[5], sp[6], sp[7], P1[sp[0]]);
     h += `<div class="p"><div class="lab"><span class="nm">Ear-canal model</span></div>
       <select id="canalModel">
         <option value="quarterwave">Quarter-wave tube</option>
@@ -100,12 +137,14 @@
 
     for (const [gid, gname, items] of ParamSpecs.MIDDLE) {
       h += `<details class="grp"><summary>${gname}</summary><div class="body">`;
-      for (const [k, lab, unit, scale, dec, zh] of items) {
+      for (const [k, lab, unit, scale, dec, desc] of items) {
+        if (KEY.some(x => x[0] === k)) continue;      // already shown above
         const d = D2[k];
-        h += ctlHTML('m:' + k, lab, unit, d * 0.5, d * 2, scale, dec, zh, P2[k]);
+        h += ctlHTML('m:' + k, lab, unit, d * 0.5, d * 2, scale, dec, desc, P2[k]);
       }
       h += `</div></details>`;
     }
+    h += `</div></details>`;
     $('#ctlGroups').innerHTML = h;
     $('#canalModel').value = P1.canalModel;
     $('#canalModel').addEventListener('change', e => { P1.canalModel = e.target.value; recompute(); });
@@ -387,6 +426,45 @@
   }
 
   /* ================= OME tab ================= */
+  // Live scenario. phi and t are PHYSICAL quantities from which the circuit
+  // values are derived; the three multipliers are assumed. Both are labelled
+  // as such in the UI so the distinction stays visible while you drag them.
+  let omeScn = { phi: 0.60, t: 0.5, kR: 4, kCte: 0.75, kRa: 5 };
+  const OME_PRESETS = {
+    mild:     { phi: 0.30, t: 0.2, kR: 2, kCte: 0.85, kRa: 2 },
+    moderate: { phi: 0.60, t: 0.5, kR: 4, kCte: 0.75, kRa: 5 },
+    severe:   { phi: 0.90, t: 1.0, kR: 8, kCte: 0.60, kRa: 20 }
+  };
+  const OME_SPECS = [
+    ['phi',  'Fill fraction &phi;', '', 0, 0.98, 0.01, 2, 'assumed',
+     'Fraction of the middle-ear cleft occupied by fluid. Clinically meaningful (partial vs full effusion) but not measured here.'],
+    ['t',    'Fluid depth on the drum', 'mm', 0, 2, 0.05, 2, 'assumed',
+     'Depth of the fluid layer lying against the eardrum. Sets the added mass.'],
+    ['kR',   'Damping factor on R_te', '×', 1, 12, 0.5, 1, 'assumed',
+     'Viscous damping from the effusion. Measured effusion viscosities span 1 cP (serous) to 10 000 cP (mucoid) — four decades — so a lumped resistance cannot be derived from them without a flow model.'],
+    ['kCte', 'Stiffening factor on C_te', '×', 0.3, 1, 0.05, 2, 'assumed',
+     'Drum thickening and retraction by negative middle-ear pressure.'],
+    ['kRa',  'Aditus obstruction on R_a', '×', 1, 40, 1, 0, 'assumed',
+     'Mucosal swelling narrowing the aditus ad antrum.']
+  ];
+
+  function omeParams(scn) {
+    // Start from the healthy CHILD and apply the scenario, deriving what can
+    // be derived exactly as middleEarParams.m does.
+    const p = JSON.parse(JSON.stringify(REF.params.middle_child));
+    const Vc0 = REF.params.middle_child.V_c;
+    p.V_c = Vc0 * (1 - scn.phi);                       // DERIVED
+    const cTot = p.V_c / (p.rho_a * p.c * p.c);        // Eq. (2)
+    p.C_cp = cTot * 3.6 / 3.95;
+    p.C_cm = cTot * 0.35 / 3.95;
+    p.ome_L_added = 1.0 * (scn.t / 10) / p.A_t;        // DERIVED: rho*t/A_t
+    p.L_te = REF.params.middle_child.L_te + p.ome_L_added;
+    p.R_te = REF.params.middle_child.R_te * scn.kR;    // assumed
+    p.C_te = REF.params.middle_child.C_te * scn.kCte;  // assumed
+    p.R_a  = REF.params.middle_child.R_a  * scn.kRa;   // assumed
+    return p;
+  }
+
   function buildOme() {
     const conds = [['middle_normal', 'Healthy adult', 'combined'],
                    ['middle_child', 'Healthy child', 'child'],
@@ -398,29 +476,76 @@
     $('#omeButtons').innerHTML = conds.map(([k, l]) =>
       `<label style="margin-right:10px"><input type="checkbox" data-c="${k}" checked> ${l}</label>`).join('');
 
+    /* ---- scenario controls ---- */
+    $('#omePresets').innerHTML = Object.keys(OME_PRESETS).map(k =>
+      `<button class="sm omePreset" data-p="${k}">${k}</button>`).join('') +
+      `<span class="hint" style="margin-left:8px">presets from the report</span>`;
+    $('#omeControls').innerHTML = OME_SPECS.map(([k, lab, unit, mn, mx, st, dec, tag, desc]) =>
+      `<div class="p" data-ome="${k}">
+        <div class="lab"><span class="nm">${lab}<span class="tagd ${tag}">${tag}</span></span>
+          <span class="val"><span class="cur">${omeScn[k].toFixed(dec)}</span> ${unit}</span></div>
+        <div class="desc">${desc}</div>
+        <div class="rowc"><input type="range" min="${mn}" max="${mx}" step="${st}" value="${omeScn[k]}">
+          <input type="number" step="${st}" value="${omeScn[k]}"></div>
+      </div>`).join('');
+
+    $$('#omeControls .p[data-ome]').forEach(row => {
+      const k = row.dataset.ome;
+      const sp = OME_SPECS.find(x => x[0] === k);
+      const rng = row.querySelector('input[type=range]');
+      const num = row.querySelector('input[type=number]');
+      const set = v => {
+        omeScn[k] = +v;
+        row.querySelector('.cur').textContent = (+v).toFixed(sp[6]);
+        window.drawOme && window.drawOme();
+      };
+      rng.addEventListener('input', e => { num.value = e.target.value; set(e.target.value); });
+      num.addEventListener('change', e => { rng.value = e.target.value; set(e.target.value); });
+    });
+    $$('#omePresets .omePreset').forEach(b => b.addEventListener('click', () => {
+      omeScn = Object.assign({}, OME_PRESETS[b.dataset.p]);
+      $$('#omeControls .p[data-ome]').forEach(row => {
+        const k = row.dataset.ome, sp = OME_SPECS.find(x => x[0] === k);
+        row.querySelector('input[type=range]').value = omeScn[k];
+        row.querySelector('input[type=number]').value = omeScn[k];
+        row.querySelector('.cur').textContent = omeScn[k].toFixed(sp[6]);
+      });
+      $$('#omePresets .omePreset').forEach(x => x.classList.toggle('on', x === b));
+      window.drawOme && window.drawOme();
+    }));
+
     const pT = new Plot($('#cvOme'), { yLabel: '|H_middle| (dB)' });
     const pL = new Plot($('#cvOmeLoss'), { yLabel: 'Loss vs healthy child (dB)' });
     window.omePlots = [pT, pL];
 
-    const draw = () => {
+    const drawOme = () => {
       const child = MiddleEar.response(REF.params.middle_child, F);
       const S = [], L = [];
       for (const [k, l, ck] of conds) {
         if (!on[k]) continue;
         const r = MiddleEar.response(REF.params[k], F);
         S.push({ key: k, label: l.split(' ')[0], color: COL[ck] || COL.combined,
-                 width: ck === 'combined' ? 1.6 : 2.2, dash: ck === 'combined' ? [4, 3] : [],
+                 width: 1.4, dash: [4, 3],
                  data: F.map((f, i) => ({ x: f, y: C.db(r.total[i]) })) });
         if (k.indexOf('ome') >= 0)
-          L.push({ key: k, label: l.split(' ')[0], color: COL[ck], width: 2.2,
+          L.push({ key: k, label: l.split(' ')[0], color: COL[ck], width: 1.4, dash: [4, 3],
                    data: F.map((f, i) => ({ x: f, y: C.db(child.total[i]) - C.db(r.total[i]) })) });
       }
+      /* the live scenario, drawn solid and on top */
+      const pS = omeParams(omeScn);
+      const rS = MiddleEar.response(pS, F);
+      S.push({ key: 'live', label: 'Your scenario', color: '#111827', width: 2.8,
+               data: F.map((f, i) => ({ x: f, y: C.db(rS.total[i]) })) });
+      L.push({ key: 'live', label: 'Your scenario', color: '#111827', width: 2.8,
+               data: F.map((f, i) => ({ x: f, y: C.db(child.total[i]) - C.db(rS.total[i]) })) });
       pT.setSeries(S); pL.setSeries(L);
+      showOmeDerived(pS, rS, child);
     };
+    window.drawOme = drawOme;
     $$('#omeButtons input').forEach(cb => cb.addEventListener('change', e => {
-      on[e.target.dataset.c] = e.target.checked; draw();
+      on[e.target.dataset.c] = e.target.checked; drawOme();
     }));
-    draw();
+    drawOme();
 
     /* table of what changed and why */
     const rows = [['mild', 'middle_ome_mild'], ['moderate', 'middle_ome_moderate'], ['severe', 'middle_ome_severe']];
@@ -481,6 +606,80 @@
       and the capacitances are re-derived from it. The child-vs-adult difference is small
       (about +0.5 dB 4PTA), which is itself a reportable result — the paediatric anatomy alone does
       little here, so almost all of the modelled effect comes from the effusion.</p>`;
+  }
+
+
+  /* ================= clickable circuit / anatomy map ================= */
+  function buildDiagram() {
+    $('#diagramWrap').innerHTML = Diagram.svg();
+    $$('#diagramWrap .blk').forEach(g => g.addEventListener('click', () => {
+      $$('#diagramWrap .blk').forEach(x => x.classList.remove('sel'));
+      g.classList.add('sel');
+      showBlock(g.dataset.id);
+    }));
+  }
+
+  function showBlock(id) {
+    const b = Diagram.BLOCKS.find(x => x.id === id);
+    const [roleShort, roleLong] = Diagram.ROLE_TEXT[b.role];
+    const midSpec = k => ParamSpecs.MIDDLE.flatMap(g => g[2]).find(x => x[0] === k);
+    let rows = '';
+    for (const k of b.params) {
+      const sp = midSpec(k);
+      const val = P2[k] * sp[3];
+      const isKey = KEY.some(x => x[0] === k);
+      rows += `<tr><td><code>${k}</code>${isKey ? ' <span class="tagexp">experiment</span>' : ''}</td>
+        <td class="num">${val.toFixed(sp[4])} ${sp[2]}</td><td>${sp[5]}</td></tr>`;
+    }
+    $('#blockInfo').innerHTML =
+      `<h3 style="margin:0 0 4px">${b.label} &mdash; ${b.anat.replace(/\n/g, ' ')}</h3>
+       <p style="margin:4px 0"><b>Position:</b> ${roleShort}. ${roleLong}</p>
+       <p style="margin:4px 0">${b.what}</p>
+       <table><tr><th>Element</th><th>Current value</th><th>What it represents</th></tr>${rows}</table>
+       <p class="hint">Values shown are the ones currently set on the Simulator tab.</p>`;
+  }
+
+
+  /* Live derived / assumed readout for the otitis-media scenario. Keeps the
+   * distinction between DERIVED and ASSUMED visible while the sliders move. */
+  function showOmeDerived(p, r, child) {
+    const fPTA = [500, 1000, 2000, 4000];
+    const loss = fPTA.reduce((a, f0) =>
+      a + (at(child.total, f0, C.db) - at(r.total, f0, C.db)), 0) / fPTA.length;
+    const ls = [];
+    for (let f0 = 250; f0 <= 4000; f0 *= 1.15)
+      ls.push(at(child.total, f0, C.db) - at(r.total, f0, C.db));
+    const flat = Math.max(...ls) - Math.min(...ls);
+    const y226 = 1 / (at(r.inputImpedance, 226, C.abs) * p.Z_unitToSI) / 1e-8;
+    const childY = 1 / (at(child.inputImpedance, 226, C.abs) * p.Z_unitToSI) / 1e-8;
+    const d = (t, v, tag) => `<span class="d"><b>${t}${tag ? ' <span class="tagd ' + tag +
+      '">' + tag + '</span>' : ''}</b><span>${v}</span></span>`;
+    const ok = (c, txt) => `<b style="color:${c ? '#2f7d32' : '#a3142b'}">${txt}</b>`;
+    $('#omeDerived').innerHTML =
+      `<div style="margin-bottom:6px">${
+        d('Air volume left', p.V_c.toFixed(2) + ' cm³', 'derived')}${
+        d('C_cp', p.C_cp.toExponential(3) + ' F', 'derived')}${
+        d('Added drum mass', (p.ome_L_added * 1e3).toFixed(1) + ' mH', 'derived')}${
+        d('L_te total', (p.L_te * 1e3).toFixed(1) + ' mH', 'derived')}</div>
+       <div style="margin-bottom:6px">${
+        d('R_te', p.R_te.toFixed(0) + ' Ω', 'assumed')}${
+        d('C_te', (p.C_te * 1e6).toFixed(3) + ' µF', 'assumed')}${
+        d('R_a', p.R_a.toFixed(0) + ' Ω', 'assumed')}</div>
+       <div style="border-top:1px solid var(--line);padding-top:6px">${
+        d('4PTA loss vs healthy child', loss.toFixed(1) + ' dB')}${
+        d('Flatness 250–4000 Hz', flat.toFixed(1) + ' dB')}${
+        d('Y(226 Hz)', y226.toFixed(2) + ' mmho (child ' + childY.toFixed(2) + ')')}${
+        d('Resonance', r.fResonance.toFixed(0) + ' Hz (child ' + child.fResonance.toFixed(0) + ')')}</div>
+       <div style="border-top:1px solid var(--line);padding-top:6px;margin-top:6px">
+        <b>Against the clinic:</b>
+        loss 10–40 dB ${ok(loss >= 10 && loss <= 40, loss.toFixed(1) + ' dB')} ·
+        flat &lt;10 dB ${ok(flat < 10, flat.toFixed(1) + ' dB')} ·
+        type B &lt;0.2 mmho ${ok(y226 < 0.2, y226.toFixed(2))} ·
+        resonance falls ${ok(r.fResonance < child.fResonance, r.fResonance.toFixed(0) + ' Hz')}
+       </div>
+       <p class="hint" style="margin:6px 0 0">Green means the model matches that clinical
+       signature at these settings. You will find it hard to turn all four green at once —
+       that limitation is explained below and is a property of the circuit, not of the sliders.</p>`;
   }
 
   /* ================= audio ================= */

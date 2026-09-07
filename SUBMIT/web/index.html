@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Outer + Middle Ear Simulator</title>
-<link rel="stylesheet" href="css/style.css?v=1788758942">
+<link rel="stylesheet" href="css/style.css?v=1788760818">
 </head>
 <body>
 
@@ -28,6 +28,26 @@
 
 <!-- ==================== SIMULATOR ==================== -->
 <section id="tab-sim" class="tab on">
+  <div class="onboard" id="onboard">
+    <button class="closeX" id="onboardClose" title="hide">&times;</button>
+    <h2>Start here</h2>
+    <ol class="steps">
+      <li><b>Look at the black curve.</b> It is the combined outer + middle ear response.
+          The peak near 3 kHz is what makes speech frequencies loudest at the cochlea.</li>
+      <li><b>Move one of the three highlighted sliders</b> on the left. They are the three
+          parameters the assignment asks you to experiment with — an <i>inertance</i>, a
+          <i>compliance</i> and a <i>loss</i>. Everything else is folded into
+          <i>Advanced</i>; you do not need it to start.</li>
+      <li><b>Press "Set baseline" first</b>, then move a slider. The grey dashed curve stays
+          where you were, so you can see exactly what your change did.</li>
+      <li>When you can predict what a slider will do before you move it, go to the
+          <b>Experiments</b> tab and record it properly.</li>
+    </ol>
+    <p class="hint">How to read the three plots: <b>magnitude</b> is how much louder or quieter
+      each frequency gets; <b>phase</b> is how much each frequency is delayed; <b>input
+      impedance</b> is how hard the middle ear is to push — it is what a clinician measures
+      with a tympanometer, not something you hear.</p>
+  </div>
   <div class="layout">
     <aside class="controls">
       <div class="ctl-head">
@@ -89,6 +109,14 @@
     <div class="warn">
       <b>EXPLORATORY SIMULATION — NOT A VALIDATED CLINICAL MODEL.</b>
     </div>
+    <div class="card">
+      <h3>Scenario controls</h3>
+      <p class="hint">Presets are the three severities used in the report. Move the sliders to
+        build your own scenario — the derived circuit values and the results update live.</p>
+      <div class="btnrow" id="omePresets"></div>
+      <div id="omeControls"></div>
+      <div id="omeDerived" class="derived"></div>
+    </div>
     <div class="btnrow" id="omeButtons"></div>
     <div class="card"><h3>Transmission</h3><canvas id="cvOme" class="plot"></canvas></div>
     <div class="card"><h3>Conductive loss vs healthy child</h3><canvas id="cvOmeLoss" class="plot"></canvas></div>
@@ -98,7 +126,17 @@
 </section>
 
 <!-- ==================== CIRCUIT ==================== -->
-<section id="tab-circuit" class="tab"><div class="pad" id="circuitBody"></div></section>
+<section id="tab-circuit" class="tab">
+  <div class="pad">
+    <h2>Where each parameter lives</h2>
+    <p class="note">Click a block in the diagram. It will tell you what that part of the ear does,
+      which circuit elements belong to it, and whether it sits in the signal path or diverts
+      volume velocity away from it.</p>
+    <div id="diagramWrap"></div>
+    <div id="blockInfo" class="blockinfo">Click a block above to see its parameters.</div>
+  </div>
+  <div class="pad" id="circuitBody"></div>
+</section>
 
 <!-- ==================== VALIDATION ==================== -->
 <section id="tab-valid" class="tab"><div class="pad" id="validBody"></div></section>
@@ -156,16 +194,17 @@
   </div>
 </section>
 
-<script src="data/reference.js?v=1788758942"></script>
-<script src="js/complex.js?v=1788758942"></script>
-<script src="js/outerEar.js?v=1788758942"></script>
-<script src="js/middleEar.js?v=1788758942"></script>
-<script src="js/combined.js?v=1788758942"></script>
-<script src="js/plot.js?v=1788758942"></script>
-<script src="js/paramSpecs.js?v=1788758942"></script>
-<script src="js/content.js?v=1788758942"></script>
-<script src="js/audio.js?v=1788758942"></script>
-<script src="js/experiments.js?v=1788758942"></script>
-<script src="js/app.js?v=1788758942"></script>
+<script src="data/reference.js?v=1788760818"></script>
+<script src="js/complex.js?v=1788760818"></script>
+<script src="js/outerEar.js?v=1788760818"></script>
+<script src="js/middleEar.js?v=1788760818"></script>
+<script src="js/combined.js?v=1788760818"></script>
+<script src="js/plot.js?v=1788760818"></script>
+<script src="js/paramSpecs.js?v=1788760818"></script>
+<script src="js/diagram.js?v=1788760818"></script>
+<script src="js/content.js?v=1788760818"></script>
+<script src="js/audio.js?v=1788760818"></script>
+<script src="js/experiments.js?v=1788760818"></script>
+<script src="js/app.js?v=1788760818"></script>
 </body>
 </html>

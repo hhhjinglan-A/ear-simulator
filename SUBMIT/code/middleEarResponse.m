@@ -16,8 +16,14 @@ function R2 = middleEarResponse(p2, f)
 %     SERIES (main path) : Z_cavity    middle-ear cavities
 %                          Z_ossicles  eardrum + malleus + incus (C_te L_te R_te)
 %                          Z_stapes    stapes, reflex, ligament, vestibule
-%     SHUNT (dead ends)  : Z_eardrum   eardrum losses (taps BEFORE C_te)
+%     SHUNT              : Z_eardrum   eardrum losses (taps BEFORE C_te)
 %                          Z_joint     incudo-stapedial joint (taps BEFORE L_s)
+%
+%   "Series" and "shunt" say where an element sits, not whether it dissipates.
+%   A series element carries all the volume velocity and subtracts the pressure
+%   it drops from what continues on; a shunt element offers a parallel route to
+%   the return and diverts velocity that then never reaches the cochlea. Only
+%   the resistances actually dissipate -- a series L or C stores and returns.
 %     TERMINAL LOAD      : Z_cochlea   cochlea || helicotrema
 %
 %   DEFINITIONS, matching the paper's own Figs. 2 and 3:
@@ -48,7 +54,7 @@ function R2 = middleEarResponse(p2, f)
 %     R2.transformer T_r
 %
 %   Two further fields are CURRENT-division diagnostics, showing how much
-%   volume velocity each dead end steals. They are NOT part of the product:
+%   volume velocity each shunt diverts. They are NOT part of the product:
 %
 %     R2.eardrum     fraction continuing past the eardrum-loss shunt
 %     R2.joint       fraction continuing past the joint shunt
@@ -113,7 +119,7 @@ R2.transformer = p2.N;
 
 R2.total = p2.N .* R2.cavity .* R2.ossicles .* R2.stapes;
 
-% Current-division diagnostics: what each dead end steals.
+% Current-division diagnostics: how much each shunt diverts.
 R2.eardrum = Zed./(Zed + Zoss + Z2);
 R2.joint   = Zjt./(Zjt + Zsta + Z3);
 

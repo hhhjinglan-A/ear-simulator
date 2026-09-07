@@ -18,8 +18,16 @@
                      |               |             |
                     gnd             gnd           gnd</pre>
 
-<p>Series elements are losses <i>on the road</i>; shunt elements are <i>dead ends</i>
-that bleed volume velocity to ground without passing it on.</p>
+<p><b>Series</b> and <b>shunt</b> describe <i>where an element sits</i>, not whether it wastes
+energy. A <b>series</b> element is in the signal path: all the volume velocity passes through it,
+and the pressure it drops is subtracted from what continues onward. A <b>shunt</b> element offers a
+parallel route back to the return, diverting volume velocity that then never reaches the cochlea.</p>
+<p>Whether either one <i>dissipates</i> depends only on whether it is resistive: a series capacitor
+or inductor stores energy and gives it back, reshaping the response without wasting any, and only
+the resistances dissipate. A shunt branch is not a "dead end" either — it carries real volume
+velocity to the return. What makes it a loss <i>for the cochlea</i> is the diversion, not
+disappearance. The distinction is not cosmetic: see experiment E2, where an element's position
+decides the sign and the frequency dependence of its effect.</p>
 
 <table>
 <tr><th>Block</th><th>Elements (Fig. 1)</th><th>Role</th><th>Internal topology</th></tr>
@@ -114,12 +122,29 @@ silently report a perfect score.</p>
 <tr><td><b>Fig. 3</b> H(f) = p_c/p_t</td><td class="num">1.34 dB rms (max 2.32)</td><td class="num">7.9° rms (max 18°)</td></tr>
 <tr><td><b>Fig. 2</b> z_t = p_t/u_t</td><td class="num">0.91 dB rms (max 1.85)</td><td class="num">2.5° rms (max 5.0°)</td></tr>
 </table>
-<p><b>Magnitude and phase establish different things.</b>
-<b>Magnitude</b> tests the element values and the transformer referral; it is insensitive to
-topology, and an earlier demonstrably-wrong version of this circuit still produced a
-plausible-looking magnitude curve. <b>Phase</b> tests the topology and the ordering — it is set
-by how many independent energy stores the signal passes through and in what order, so it catches
-a mis-placed shunt that magnitude alone would hide.</p>
+<h3>What magnitude and phase each establish</h3>
+<p><b>Neither is blind to topology, and magnitude is not the weaker test.</b> An earlier draft of
+this page claimed that magnitude was "insensitive to topology" and that a wrong circuit had still
+produced a plausible magnitude curve. <b>The project's own recorded numbers contradict that</b>, so
+the claim has been withdrawn. Before Figure 1 was available the circuit had the eardrum-loss branch
+mis-structured and the output taken at the wrong node, and its magnitude was wrong by far more than
+the figure-reading error:</p>
+<table>
+<tr><th>Frequency</th><th>Paper Fig. 3</th><th>Wrong-topology version</th><th>Error</th></tr>
+<tr><td>100 Hz</td><td class="num">+4.0 dB</td><td class="num">+16.7 dB</td><td class="num">+12.7 dB</td></tr>
+<tr><td>1 kHz</td><td class="num">+22.4 dB</td><td class="num">+25.0 dB</td><td class="num">+2.6 dB</td></tr>
+<tr><td>4 kHz</td><td class="num">+20.8 dB</td><td class="num">+8.1 dB</td><td class="num">&minus;12.7 dB</td></tr>
+<tr><td>10 kHz</td><td class="num">+8.0 dB</td><td class="num">+1.2 dB</td><td class="num">&minus;6.8 dB</td></tr>
+</table>
+<p>Magnitude caught the error immediately once there was something to compare against. The errors
+survived as long as they did because <b>no reference curve was available</b>, not because magnitude
+is a weak test.</p>
+<p>What phase adds is <b>independent</b> evidence rather than stronger evidence. Phase is fixed by
+how many energy-storage elements the signal passes and in what order, so it constrains the
+arrangement through a partly different route: a model could in principle be tuned to fit a
+magnitude curve with compensating element values, and the phase would then still disagree.
+Agreement in <i>both</i> is therefore better evidence than either alone — which is why both are
+reported separately above, and why neither number is quoted without the other.</p>
 
 <h2>An open question, not a correction</h2>
 <div class="warn">
@@ -137,19 +162,90 @@ Two readings are possible and this project <b>cannot settle which the authors in
 Lutman &amp; Martin (1979), the source the reflex model derives from, before being reported as fact.</p>
 
 <h2>AI use and error log</h2>
-<p class="note">Separating <b>what the AI caught in its own work</b> from <b>what I caught by checking
-against the source</b>.</p>
+<p class="note">Every row is attributed to <b>who actually found it</b>, in three strict
+categories. Nothing is attributed to the student that the student did not do.</p>
 <table>
-<tr><th>#</th><th>What happened</th><th>Caught by</th></tr>
-<tr><td>1</td><td>AI proposed a naive series chain for the five subsystems. Wrong: the circuit is a ladder.</td><td><b>Me</b> — I described the ladder structure to it</td></tr>
-<tr><td>2</td><td>AI then built the eardrum losses as three parallel RC cells tapping <i>after</i> the ossicles. Figure 1 shows one series chain containing two parallel sub-blocks, tapping <i>before</i> C_te.</td><td><b>Me</b> — only visible once I supplied the paper</td></tr>
-<tr><td>3</td><td>AI measured p_c across the whole stapes-plus-cochlea tail instead of across the cochlear load alone, overstating output where the stapes mass reactance is large. Changed H at 4 kHz by more than 10 dB.</td><td><b>Me</b> — reading Fig. 1</td></tr>
-<tr><td>4</td><td>AI invented a transformer ratio ≈22 before the paper was available; Eq. (1) gives 17.</td><td><b>Me</b> — I supplied Eq. (1)</td></tr>
-<tr><td>5</td><td>AI's own test suite asserted a complex division <code>z/z</code> is bit-exactly 1; that a softer cavity can only raise H (it reverses sign above the ossicular resonance); that opening the joint shunt can only raise H (it destroys the 5.4 kHz resonance, costing 5.3 dB); and that a complex current-divider magnitude is bounded by 1.</td><td><b>AI self-check</b> — found by running its own tests</td></tr>
-<tr><td>6</td><td>AI had written "Values are Figure 1 / Table I of Pascal et al." into source it had never read. It flagged this itself and downgraded it to an explicit "provenance unverified" block until the PDF arrived.</td><td><b>AI self-check</b></td></tr>
-<tr><td>7</td><td>The web-vs-MATLAB comparison silently treated NaN as a perfect score, because every comparison against NaN is false. Hardened to count non-finite values explicitly.</td><td><b>AI self-check</b> — noticed an impossible "0.00e+0" row</td></tr>
-<tr><td>8</td><td>The outer-ear engine was copied into this project without its own test suite, so the copy was assumed rather than verified to still work.</td><td><b>Me</b> — I asked whether H1 had actually been integrated</td></tr>
-</table>`;
+<tr><th>Category</th><th>Meaning</th></tr>
+<tr><td><b>A · Student found it</b></td><td>The student identified the error from their own
+knowledge and told the AI. No new material was needed.</td></tr>
+<tr><td><b>B · Student supplied material, AI found it</b></td><td>The student provided the paper
+or a table; the AI then read it and located the discrepancy. Neither party could have done this
+alone — without the source nothing would have been found, and the student did not do the
+element-by-element comparison.</td></tr>
+<tr><td><b>C · AI self-check</b></td><td>The AI found it in its own work, with no new material
+and without being told anything was wrong — usually by running its own tests.</td></tr>
+</table>
+
+<table>
+<tr><th>#</th><th>What happened</th><th>Found by</th></tr>
+
+<tr><td>1</td><td>The AI built the five subsystems as a naive series/parallel chain. The circuit
+is a <b>ladder network</b>: one series path with shunt branches. The student described the correct
+structure in prose.</td><td><b>A</b></td></tr>
+
+<tr><td>2</td><td>The AI estimated a transformer ratio of about 22 from an assumed 1.3 lever ratio.
+The student supplied Eq. (1) and the correct value, <b>T_r = 17</b>.</td><td><b>A</b></td></tr>
+
+<tr><td>3</td><td>The outer-ear engine had been copied into this project without its own test
+suite, so the copies were assumed rather than verified to still work. The student's question
+"did you actually integrate H1?" exposed it.</td><td><b>A</b></td></tr>
+
+<tr><td>4</td><td>Wording in this page claimed magnitude was "insensitive to topology" and that a
+wrong circuit had produced a plausible magnitude curve. The student asked for inaccurate
+explanations to be corrected; the AI then checked its own recorded numbers, found they contradicted
+the claim (12.7 dB error at 4 kHz), and withdrew it.</td><td><b>A</b> flagged the
+category, <b>C</b> identified the specific error</td></tr>
+
+<tr><td>5</td><td>With the paper supplied, Figure 1 showed the eardrum-loss branch is a
+<b>single series chain containing two parallel sub-blocks</b>, not three parallel RC cells, and
+that it taps the main line <b>before</b> C_te, not after the ossicles.</td><td><b>B</b></td></tr>
+
+<tr><td>6</td><td>Figure 1 showed p_c is measured <b>across the cochlear load alone</b>. The model
+had been taking it across the whole stapes-plus-cochlea tail, overstating the output wherever the
+stapes mass reactance is large — more than 10 dB at 4 kHz.</td><td><b>B</b></td></tr>
+
+<tr><td>7</td><td>Figure 1 showed the cavity block is three branches in parallel,
+(L_a+C_cp+R_a) ∥ R_cm ∥ C_cm, not the arrangement first coded.</td><td><b>B</b></td></tr>
+
+<tr><td>8</td><td>The volume assignment on p. 1510 showed C_cp is the <b>pneumatic cells</b> (≈5 cm³)
+and C_cm the <b>tympanic cavity</b> (≈0.5 cm³) — the opposite of the labels first used.</td><td><b>B</b></td></tr>
+
+<tr><td>9</td><td>Eq. (7)'s capacitance coefficients are printed in farads, which would make the
+annular ligament a short circuit. Testing both readings against the paper's own figures showed only
+the microfarad reading reproduces them. Reported as an <b>open question</b>, not as a correction to
+the paper.</td><td><b>B</b></td></tr>
+
+<tr><td>10</td><td>The AI's own test suite contained four false assertions, all found by running it:
+that a complex division z/z is bit-exactly 1; that a softer cavity can only raise H (the sign
+reverses above the ossicular resonance); that opening the joint shunt can only raise H (it destroys
+the 5.4 kHz resonance and costs 5.3 dB); and that a complex current-divider magnitude is bounded
+by 1.</td><td><b>C</b></td></tr>
+
+<tr><td>11</td><td>The AI had written "Values are Figure 1 / Table I of Pascal et al." into source it
+had never read. It flagged this itself and downgraded it to an explicit "provenance unverified"
+block until the PDF arrived.</td><td><b>C</b></td></tr>
+
+<tr><td>12</td><td>Implementing the cavity as a shunt, as instructed, produced an input impedance
+that falls monotonically to the band edge — which no measured middle ear does. The AI reported the
+comparison with the series alternative rather than silently overriding the instruction; the student
+then decided to switch. (Figure 1 later confirmed series.)</td><td><b>C</b> found the anomaly,
+<b>A</b> made the decision</td></tr>
+
+<tr><td>13</td><td>The web-vs-MATLAB comparison silently treated NaN as a perfect score, because
+every comparison against NaN is false. Noticed as an impossible "0.00e+0" row and hardened to count
+non-finite values.</td><td><b>C</b></td></tr>
+
+<tr><td>14</td><td>The web page could not resolve a peak shift smaller than one frequency-grid bin,
+so experiments E1 and E3 reported a peak as not moving. Found by comparing against MATLAB during
+browser testing; fixed with sub-bin parabolic refinement.</td><td><b>C</b></td></tr>
+
+<tr><td>15</td><td>Replacing the asynchronous data fetch with a script tag exposed a
+temporal-dead-zone crash that the fetch had been masking. Found by reading the browser console
+after the change.</td><td><b>C</b></td></tr>
+</table>
+<p class="hint">Counts: <b>A</b> 3 (plus 2 shared), <b>B</b> 5, <b>C</b> 6 (plus 2 shared).
+The B rows are the substantive physics errors, and none of them could have been found without the
+student supplying the paper.</p>`;
 
   root.Content = { CIRCUIT, VALID };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

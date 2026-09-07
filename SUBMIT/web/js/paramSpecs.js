@@ -49,7 +49,7 @@
       ['R_te',  'R_te damping',    'Ω',  1,   1, 'Damping of the ossicular block']
     ]],
     ['joint',    'Incudo-stapedial joint (shunt at node 2)', [
-      ['C_is',  'C_is joint compliance', 'µF', 1e6, 4, 'Joint compliance. A shunt dead end: larger leaks more at high frequency'],
+      ['C_is',  'C_is joint compliance', 'µF', 1e6, 4, 'Joint compliance. Sits in a shunt branch, so a larger value diverts more at high frequency'],
       ['R_is',  'R_is joint loss',       'Ω',  1,   1, 'Joint loss']
     ]],
     ['stapes',   'Stapes + ligament + vestibule (series)', [

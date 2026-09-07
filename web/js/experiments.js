@@ -22,9 +22,9 @@ Raising it by 20 % lowers the ossicular resonance 1/(2π√(L_teC_te)) by 1/√1
 gain above that resonance while leaving the stiffness-controlled low frequencies almost untouched.` },
     { id: 'E2', param: 'C_is', factor: 2.0, kind: 'Compliance',
       title: 'E2 · Joint compliance C_is ×2',
-      ai: `C_is sits in a <b>shunt</b> branch — a dead end. Doubling it halves that branch's impedance
-1/(ωC), so more volume velocity leaks away instead of reaching the stapes, and the leak grows with
-frequency. Expect little change below 1 kHz and a clear loss at the top of the band. Note also that
+      ai: `C_is sits in a <b>shunt</b> branch, i.e. a parallel route back to the return rather than a
+link in the chain. Doubling it halves that branch's impedance 1/(ωC), so more volume velocity is
+diverted through it instead of reaching the stapes, and the diversion grows with frequency. Expect little change below 1 kHz and a clear loss at the top of the band. Note also that
 C_is resonates with the stapes+vestibule mass near 5.4 kHz, so it also moves that second peak.` },
     { id: 'E3', param: 'R_te', factor: 2.0, kind: 'Resistance / loss',
       title: 'E3 · Ossicular damping R_te ×2',

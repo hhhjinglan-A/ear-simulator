@@ -80,9 +80,17 @@ separate files, since they drive a different transfer function.
 | `Z_stapes` | L_s 8 mH, C_st, R_la, C_la, L_v 21 mH | **series** | all in series |
 | `Z_cochlea` | R_co 1211 Ω, R_h 850 Ω, L_h 150 mH | **terminal load** | R_co ∥ (R_h + L_h) |
 
-Series elements are losses *on the road*; shunt elements are *dead ends* that
-bleed volume velocity to ground without passing it on. The distinction is not
-cosmetic — see E2 in §5.
+**Series** and **shunt** describe *where an element sits*, not whether it wastes
+energy. A **series** element is in the signal path: all the volume velocity passes
+through it and the pressure it drops is subtracted from what continues onward. A
+**shunt** element offers a parallel route back to the return, diverting volume
+velocity that then never reaches the cochlea.
+
+Whether either dissipates depends only on whether it is resistive — a series
+capacitor or inductor stores and returns energy, reshaping the response without
+wasting any. A shunt branch is not a "dead end" either: it carries real volume
+velocity to the return. What makes it a loss *for the cochlea* is the diversion,
+not disappearance. The distinction is not cosmetic — see E2 in §5.
 
 **Definitions**, matching the paper's own figures:
 
@@ -264,16 +272,30 @@ Figs. 2 and 3 (±1.5 dB, ±15 % and ±10° of reading error).
 | **Fig. 3** H(f) = p_c/p_t | **1.34 dB rms** (max 2.32) | **7.9° rms** (max 18°) |
 | **Fig. 2** z_t = p_t/u_t | **0.91 dB rms** (max 1.85) | **2.5° rms** (max 5.0°) |
 
-**Magnitude and phase establish different things, and both were needed.**
+**Both were needed, and magnitude is not the weaker test.** An earlier draft of this
+README claimed magnitude was "insensitive to topology" and that a wrong circuit had
+still produced a plausible magnitude curve. **This project's own recorded numbers
+contradict that, so the claim is withdrawn.** Before Figure 1 was available the circuit
+had the eardrum-loss branch mis-structured and the output taken at the wrong node, and
+its magnitude was wrong by far more than the figure-reading error:
 
-- **Magnitude** tests the **element values and the transformer referral**. It is
-  insensitive to topology: several wrong arrangements can be made to fit a
-  magnitude curve. An earlier, demonstrably wrong version of this circuit still
-  produced a plausible-looking magnitude response.
-- **Phase** tests the **topology and the ordering**. It is set by how many
-  independent energy stores the signal passes through and in what order, so it
-  catches a mis-placed shunt or a swapped series/parallel pair that magnitude
-  alone would hide.
+| Frequency | Paper Fig. 3 | Wrong-topology version | Error |
+|---|---|---|---|
+| 100 Hz | +4.0 dB | +16.7 dB | +12.7 dB |
+| 1 kHz | +22.4 dB | +25.0 dB | +2.6 dB |
+| 4 kHz | +20.8 dB | +8.1 dB | −12.7 dB |
+| 10 kHz | +8.0 dB | +1.2 dB | −6.8 dB |
+
+Magnitude caught that immediately once there was a reference curve. The errors survived
+as long as they did because **no reference was available**, not because magnitude is a
+weak test.
+
+- **Magnitude** tests the **element values and the transformer referral**.
+- **Phase** adds **independent** evidence rather than stronger evidence. It is fixed by
+  how many energy-storage elements the signal passes and in what order, so it constrains
+  the arrangement by a partly different route: a model could in principle be tuned to fit
+  a magnitude curve with compensating element values and still disagree in phase.
+  Agreement in both is therefore better evidence than either alone.
 
 Only both together support the claim that the parts are right *and* wired
 right. Qualitative features also reproduce: the 800–1600 Hz plateau, the dip

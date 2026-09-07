@@ -108,7 +108,7 @@ p2.R_te = 65;
 
 % ---- 3. eardrum losses  -> Z_EARDRUM (shunt) ---------------------------
 % Three series-RC cells in parallel: the part of the drum that moves
-% without driving the ossicles, i.e. a dead end that steals volume
+% without driving the ossicles, i.e. a shunt branch that diverts volume
 % velocity. L_ti rides in the second cell (see Z_EARDRUM).
 p2.R_ti1 = 200;      p2.C_ti1 = 0.5e-6;
 p2.R_ti2 = 105;      p2.C_ti2 = 0.3e-6;   p2.L_ti = 15e-3;
@@ -116,7 +116,7 @@ p2.R_ti3 = 12500;    p2.C_ti3 = 0.2e-6;
 p2.L_ti_inBranch2 = true;   % false = L_ti in series with the whole block
 
 % ---- 4. incudo-stapedial joint  -> Z_JOINT (shunt) ---------------------
-% A compliant joint is a dead end: motion that goes into flexing the joint
+% A compliant joint sits in a shunt branch: motion that goes into flexing it
 % never reaches the stapes.
 p2.C_is = 0.03e-6;
 p2.R_is = 170;

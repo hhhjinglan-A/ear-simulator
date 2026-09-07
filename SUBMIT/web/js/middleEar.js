@@ -126,7 +126,7 @@
       out.inputImpedance[i] = Zin;
       out.cavity[i] = fCav; out.ossicles[i] = fOss; out.stapes[i] = fSta;
 
-      // current-division diagnostics: what each dead end steals. These are
+      // current-division diagnostics: how much each shunt diverts. These are
       // complex dividers, so their magnitude is NOT bounded by 1.
       out.eardrum[i] = C.div(Zed, C.add(Zed, C.add(Zoss, Z2)));
       out.joint[i]   = C.div(Zjt, C.add(Zjt, C.add(Zsta, Z3)));

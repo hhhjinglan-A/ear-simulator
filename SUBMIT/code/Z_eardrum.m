@@ -6,7 +6,7 @@ function Z = Z_eardrum(f, p2)
 %
 %   This is the part of the tympanic membrane that vibrates WITHOUT driving
 %   the ossicles ("the eardrum in fact vibrates in several segments",
-%   p. 1510). In the ladder it is a dead end that bleeds volume velocity to
+%   p. 1510). In the ladder it is a shunt branch that diverts volume velocity to
 %   ground, and it taps the main line BEFORE C_te -- i.e. between the cavity
 %   block and the eardrum-malleus-incus block.
 %

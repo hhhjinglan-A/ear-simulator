@@ -62,11 +62,16 @@ All MATLAB sources pass `checkcode` with no warnings.
 These are **not** the same claim and are reported separately:
 
 - **Magnitude** tests the element values and the transformer referral. It is
-  insensitive to topology — an earlier, demonstrably wrong version of this
-  circuit still produced a plausible-looking magnitude curve.
-- **Phase** tests the topology and the ordering. It is set by how many
-  independent energy stores the signal passes through and in what order, so it
-  catches a mis-placed shunt that magnitude alone would hide.
+  **not** blind to topology: when this circuit had the eardrum-loss branch
+  mis-structured and the output taken at the wrong node, its magnitude was wrong
+  by +12.7 dB at 100 Hz and −12.7 dB at 4 kHz. Magnitude caught that as soon as
+  there was a reference curve to compare against.
+- **Phase** adds *independent* evidence rather than stronger evidence. It is
+  fixed by how many energy-storage elements the signal passes and in what order,
+  so it constrains the arrangement by a partly different route: a model could in
+  principle be tuned to fit a magnitude curve with compensating element values
+  and still disagree in phase. Agreement in both is better evidence than either
+  alone.
 
 Separately again: **"the web agrees with MATLAB"** says the port is faithful and
 says nothing about whether the model is right. **"the model agrees with the
