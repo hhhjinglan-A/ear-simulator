@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Outer + Middle Ear Simulator</title>
-<link rel="stylesheet" href="css/style.css?v=1788762062">
+<link rel="stylesheet" href="css/style.css?v=1788762794">
 </head>
 <body>
 
@@ -46,9 +46,14 @@
       <b>Magnitude</b> is <i>pressure gain</i>: how much bigger the sound pressure at the cochlea is
       than at the input, in dB. It is not loudness — loudness is a perceptual quantity that also
       depends on level and on the listener.
-      <b>Phase</b> is the angle by which each frequency component is shifted. A phase shift is not
-      the same thing as a time delay: a delay would show up as phase falling in proportion to
-      frequency, and the actual delay is the <i>slope</i> of this curve, not its value.
+      <b>Phase</b> is the angle by which each frequency component is shifted, in degrees. A phase
+      shift is not a time delay. Two different delays can be derived from it:
+      <i>phase delay</i> &minus;&phi;/&omega; and <i>group delay</i> &minus;d&phi;/d&omega;, both
+      with &phi; in radians and &omega; = 2&pi;f in rad/s. Group delay is the one that describes
+      when an envelope arrives. Note that it is the derivative with respect to <b>angular
+      frequency on a linear scale</b>, so the visual steepness of this curve &mdash; degrees against
+      a logarithmic frequency axis &mdash; is <b>not</b> the group delay and cannot be read off by
+      eye; a constant delay would look curved here, not straight.
       <b>Input impedance</b> is how hard the middle ear is to drive; it is what a tympanometer
       measures, and it is not something you hear.</p>
   </div>
@@ -216,17 +221,17 @@
   </div>
 </section>
 
-<script src="data/reference.js?v=1788762121"></script>
-<script src="js/complex.js?v=1788762121"></script>
-<script src="js/outerEar.js?v=1788762121"></script>
-<script src="js/middleEar.js?v=1788762121"></script>
-<script src="js/combined.js?v=1788762121"></script>
-<script src="js/plot.js?v=1788762121"></script>
-<script src="js/paramSpecs.js?v=1788762121"></script>
-<script src="js/diagram.js?v=1788762121"></script>
-<script src="js/content.js?v=1788762121"></script>
-<script src="js/audio.js?v=1788762121"></script>
-<script src="js/experiments.js?v=1788762121"></script>
-<script src="js/app.js?v=1788762121"></script>
+<script src="data/reference.js?v=1788762822"></script>
+<script src="js/complex.js?v=1788762822"></script>
+<script src="js/outerEar.js?v=1788762822"></script>
+<script src="js/middleEar.js?v=1788762822"></script>
+<script src="js/combined.js?v=1788762822"></script>
+<script src="js/plot.js?v=1788762822"></script>
+<script src="js/paramSpecs.js?v=1788762822"></script>
+<script src="js/diagram.js?v=1788762822"></script>
+<script src="js/content.js?v=1788762822"></script>
+<script src="js/audio.js?v=1788762822"></script>
+<script src="js/experiments.js?v=1788762822"></script>
+<script src="js/app.js?v=1788762822"></script>
 </body>
 </html>

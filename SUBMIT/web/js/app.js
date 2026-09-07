@@ -337,11 +337,17 @@
   /* ================= experiments ================= */
   let expCurrent = 'E1';
   function buildExperiments() {
+    // Records written before runs were tagged were all automated demos.
+    const mig = Experiments.load();
+    let changed = false;
+    for (const k of Object.keys(mig))
+      if (mig[k].result && !mig[k].result.mode) { mig[k].result.mode = 'demo'; changed = true; }
+    if (changed) Experiments.save(mig);
+
     const store = Experiments.load();
-    $('#expSel').innerHTML = Experiments.DEFS.map(d => {
-      const done = store[d.id] && store[d.id].result;
-      return `<button data-e="${d.id}" class="${d.id === expCurrent ? 'on' : ''}">${d.id}${done ? ' ✓' : ''}</button>`;
-    }).join('');
+    $('#expSel').innerHTML = Experiments.DEFS.map(d =>
+      `<button data-e="${d.id}" class="${d.id === expCurrent ? 'on' : ''}">${d.id}
+        <span class="st">${statusMark(store[d.id])}</span></button>`).join('');
     $$('#expSel button').forEach(b => b.addEventListener('click', () => {
       expCurrent = b.dataset.e;
       $$('#expSel button').forEach(x => x.classList.toggle('on', x === b));
@@ -351,6 +357,7 @@
       const s = store[d.id] || {};
       return `<div class="exp" data-id="${d.id}">
         <h3>${d.title}</h3>
+        <div class="statusbar"></div>
         <p class="hint">${d.kind} · changes <code>${d.param}</code> × ${d.factor}
           (from the current value on the Simulator tab)</p>
         <p><span class="step">1</span><b>Step 1 — your prediction</b></p>
@@ -374,25 +381,40 @@
         el.querySelector('.aiexp').style.display = 'block';
         persist(id, { aiViewedAfterPrediction: true });
       });
-      el.querySelector('.runExp').addEventListener('click', () => runExperiment(id, def, el));
+      el.querySelector('.runExp').addEventListener('click', () => runExperiment(id, def, el, false));
       el.querySelectorAll('textarea').forEach(ta => ta.addEventListener('input', () => {
         const o = {}; o[ta.dataset.f] = ta.value; persist(id, o);
         el.querySelector('.saved').textContent = 'saved ' + new Date().toLocaleTimeString();
+        refreshStatuses();
       }));
       const st2 = Experiments.load()[id];
       if (st2 && st2.result) showResult(el, st2.result);
       el.hidden = id !== expCurrent;
     });
+    refreshStatuses();
 
     $('#expExportJson').addEventListener('click', () => {
-      download('experiment_log.json', JSON.stringify(Experiments.load(), null, 2), 'application/json');
+      // The JSON already carries paramsBefore / paramsAfter in full, so the
+      // export is reproducible without the page.
+      const st = Experiments.load();
+      const doc = {
+        exported: new Date().toISOString(),
+        note: 'paramsBefore and paramsAfter are the COMPLETE outer- and middle-ear parameter ' +
+              'sets used for each run. mode:"demo" marks an automated demonstration run, ' +
+              'mode:"student" marks the student\'s own. student_prediction and ' +
+              'student_observation are never auto-filled.',
+        defaults: { outer: D1, middle: D2 },
+        experiments: st
+      };
+      download('experiment_log.json', JSON.stringify(doc, null, 2), 'application/json');
     });
     $('#expExportCsv').addEventListener('click', () => {
       const st = Experiments.load();
       let csv = 'id,param,factor,ran_at,student_prediction,student_observation,' +
                 'ai_viewed_after_prediction,dH_100Hz,dH_500Hz,dH_1kHz,dH_2kHz,dH_4kHz,dH_10kHz,' +
                 'peak_before_dB,peak_after_dB,peak_f_before,peak_f_after,resonance_before,' +
-                'resonance_after,reference_prediction_vs_result\n';
+                'resonance_after,mode,baseline_is_defaults,baseline_drift,' +
+                'param_value_before,param_value_after,reference_prediction_vs_result\n';
       for (const id of Object.keys(st)) {
         const s = st[id], r = s.result || {};
         const q = t => '"' + String(t == null ? '' : t).replace(/"/g, '""') + '"';
@@ -400,6 +422,8 @@
                 !!s.aiViewedAfterPrediction, ...(r.dH || ['', '', '', '', '', '']),
                 r.peakBefore, r.peakAfter, r.fPeakBefore, r.fPeakAfter,
                 r.resBefore, r.resAfter,
+                r.mode || '', r.baselineIsDefaults, q((r.baselineDrift || []).join(' ')),
+                r.baselineValue, r.newValue,
                 q((r.referenceCheck || []).join(' | '))].join(',') + '\n';
       }
       download('experiment_log.csv', csv, 'text/csv');
@@ -411,17 +435,71 @@
     });
   }
 
+
+  /* Three distinct states, because "the computation ran" and "the student has
+   * recorded the experiment" are different things and the assignment marks the
+   * second one. */
+  function expStatus(rec) {
+    if (!rec || !rec.result) return 'notrun';
+    const wrote = (rec.prediction || '').trim() && (rec.observation || '').trim();
+    if (rec.result.mode === 'demo') return 'demo';
+    return wrote ? 'complete' : 'ran';
+  }
+  const STATUS_TXT = {
+    notrun:   ['not run',            'grey',  'Nothing recorded yet.'],
+    demo:     ['demo run',           'amber', 'Run automatically as a demonstration. Re-run it yourself to make it your own experiment.'],
+    ran:      ['run, not written up','blue',  'The computation has run, but your prediction and observation are still empty.'],
+    complete: ['complete',           'green', 'Run, with your prediction and your observation both written.']
+  };
+  function statusMark(rec) {
+    const st = expStatus(rec);
+    return { notrun: '○', demo: '▶', ran: '◐', complete: '✓' }[st];
+  }
+  function refreshStatuses() {
+    const store = Experiments.load();
+    $$('#expSel button').forEach(b => {
+      b.querySelector('.st').textContent = statusMark(store[b.dataset.e]);
+    });
+    $$('#expList .exp').forEach(el => {
+      const rec = store[el.dataset.id], st = expStatus(rec);
+      const [txt, col, help] = STATUS_TXT[st];
+      const bar = el.querySelector('.statusbar');
+      if (bar) bar.innerHTML =
+        `<span class="pill ${col}">${txt}</span> <span class="hint">${help}</span>` +
+        (st === 'demo' ? ' <button class="sm claimRun">Re-run as my own</button>' : '');
+      const cb = el.querySelector('.claimRun');
+      if (cb) cb.addEventListener('click', () => {
+        const def = Experiments.DEFS.find(d => d.id === el.dataset.id);
+        runExperiment(el.dataset.id, def, el, false);
+      });
+    });
+  }
+
   function persist(id, patch) {
     const st = Experiments.load();
     st[id] = Object.assign({}, st[id], patch);
     Experiments.save(st);
   }
 
-  function runExperiment(id, def, el) {
+  // isDemo: set when the run is an automated demonstration rather than the
+  // student's own. Marked in the record and in the export so a demo run is
+  // never mistaken for the student's experiment.
+  function runExperiment(id, def, el, isDemo) {
     const before = Combined.response(P1, P2, F);
     const q2 = JSON.parse(JSON.stringify(P2));
     q2[def.param] = q2[def.param] * def.factor;
     const after = Combined.response(P1, q2, F);
+
+    // Is the run starting from the published defaults, or from parameters the
+    // student has already moved? An experiment is only comparable with the
+    // report if it starts from the defaults.
+    const drift = [];
+    for (const k of Object.keys(D2))
+      if (typeof D2[k] === 'number' && Math.abs(P2[k] - D2[k]) > Math.abs(D2[k]) * 1e-9)
+        drift.push(k);
+    for (const k of Object.keys(D1))
+      if (typeof D1[k] === 'number' && Math.abs(P1[k] - D1[k]) > Math.abs(D1[k]) * 1e-9)
+        drift.push(k);
     const fs = [100, 500, 1000, 2000, 4000, 10000];
     const dH = fs.map(f0 => +(at(after.Hmiddle, f0, C.db) - at(before.Hmiddle, f0, C.db)).toFixed(3));
     const res = {
@@ -431,23 +509,35 @@
       peakBefore: +before.middle.peakGainDb.toFixed(2), peakAfter: +after.middle.peakGainDb.toFixed(2),
       fPeakBefore: Math.round(before.middle.fPeak), fPeakAfter: Math.round(after.middle.fPeak),
       resBefore: Math.round(before.middle.fResonance), resAfter: Math.round(after.middle.fResonance),
-      params: JSON.parse(JSON.stringify(P2))
+      mode: isDemo ? 'demo' : 'student',
+      baselineIsDefaults: drift.length === 0,
+      baselineDrift: drift,
+      paramsBefore: { outer: JSON.parse(JSON.stringify(P1)),
+                      middle: JSON.parse(JSON.stringify(P2)) },
+      paramsAfter:  { outer: JSON.parse(JSON.stringify(P1)),
+                      middle: q2 }
     };
     res.referenceCheck = checkReference(id, res, before, after);
     persist(id, { result: res });
     showResult(el, res);
-    const store = Experiments.load();
-    $$('#expSel button').forEach(b => {
-      const done = store[b.dataset.e] && store[b.dataset.e].result;
-      b.textContent = b.dataset.e + (done ? ' ✓' : '');
-    });
+    refreshStatuses();
   }
 
   function showResult(el, r) {
     const box = el.querySelector('.result');
     box.style.display = 'block';
     box.innerHTML =
+      (r.mode === 'demo'
+        ? `<div class="demoflag"><b>DEMONSTRATION RUN</b> — produced automatically to show the
+             workflow. It is real output from the model, but it is <b>not</b> your experiment.
+             Press "Re-run as my own" above once you have written your prediction.</div>` : '') +
       `<b>Result</b> — ran ${new Date(r.ranAt).toLocaleString()}<br>
+       <b>Baseline:</b> ${r.baselineIsDefaults === undefined
+          ? '<span class="hint">not recorded (run predates baseline tracking) — re-run to capture it</span>'
+          : r.baselineIsDefaults
+            ? 'published defaults (comparable with the report)'
+            : 'MODIFIED from defaults — ' + (r.baselineDrift || []).join(', ') +
+              ' <span class="hint">(results will not match the report)</span>'}<br>
        <code>${r.param}</code>: ${r.baselineValue.toPrecision(4)} → ${r.newValue.toPrecision(4)} (×${r.factor})
        <table><tr><th>f (Hz)</th>${r.freqs.map(f => `<th>${f}</th>`).join('')}</tr>
        <tr><td>ΔH<sub>middle</sub> (dB)</td>${r.dH.map(v => `<td class="num">${v >= 0 ? '+' : ''}${v.toFixed(2)}</td>`).join('')}</tr></table>

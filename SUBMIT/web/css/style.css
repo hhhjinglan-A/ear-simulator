@@ -171,3 +171,11 @@ pre.mono{overflow-x:auto;white-space:pre;font-size:11px}
   padding:7px 10px;border-radius:0 5px 5px 0;font-size:12.5px}
 .refcheck ul{margin:4px 0 0;padding-left:18px}
 .refcheck li{margin:3px 0}
+
+.statusbar{margin:2px 0 6px}
+.pill{font-size:11px;border-radius:99px;padding:2px 9px;color:#fff;font-weight:600}
+.pill.grey{background:#8b8f98}.pill.amber{background:#b8860b}
+.pill.blue{background:#0b6bcb}.pill.green{background:#2f7d32}
+.viewsel button .st{opacity:.85;margin-left:2px}
+.demoflag{background:#fdf6e7;border-left:3px solid var(--amber);padding:7px 10px;
+  border-radius:0 5px 5px 0;margin-bottom:8px;font-size:12.5px}
