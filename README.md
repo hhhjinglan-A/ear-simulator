@@ -1,12 +1,20 @@
 # Outer + Middle Ear Simulator
 
+> [!IMPORTANT]
+> ## ⬇︎ Start here: [**REPORT.pdf**](REPORT.pdf)
+>
+> That one file is the whole submission — 13 pages, all five figures embedded,
+> every deliverable answered. **Nothing else in this repository has to be opened.**
+> The folders below are the source code the report was produced from; they are
+> here so the work can be checked, not because they need reading.
+>
+> Optional, if you would like to try the model rather than read about it:
+> **[▶ open the interactive simulator](https://hhhjinglan-a.github.io/ear-simulator/)**
+> — runs in any browser, no MATLAB and no installation.
+
 MUE 610 Psychoacoustics — AI Build Lab. A middle-ear model transcribed from
 Pascal, Bourgeade, Lagier & Legros, *J. Acoust. Soc. Am.* **104**(3), 1509–1516
 (1998), Fig. 1, cascaded with an outer-ear model from the previous assignment.
-
-**▶ [Open the interactive simulator](https://hhhjinglan-a.github.io/ear-simulator/)**
-&nbsp;·&nbsp; **[REPORT.pdf](REPORT.pdf) is the submitted report** — 13 pages,
-all figures included, nothing else needs to be opened.
 
 > The model reproduces the paper's own published curves to **1.34 dB rms in
 > magnitude and 7.9° rms in phase** (Fig. 3), and **0.91 dB / 2.5°** (Fig. 2).
@@ -17,7 +25,7 @@ all figures included, nothing else needs to be opened.
 
 ## What is in here
 
-Four files and three folders. Nothing is duplicated.
+Five files and three folders. Nothing is duplicated.
 
 | | What it is | Do you need to open it? |
 |---|---|---|
