@@ -857,7 +857,9 @@
     const fLC = p => 1 / (2 * Math.PI * Math.sqrt(p.L_te * p.C_te));
     const fJoint = p => 1 / (2 * Math.PI * Math.sqrt((p.L_s + p.L_v) * p.C_is));
 
-    let html = `<div class="note"><b>Baseline for all three experiments.</b> ${R.baselineNote}</div>`;
+    let html = `<div class="warn"><b>How to read the dates on these sections.</b>
+        ${R.provenanceWarning}</div>
+      <div class="note"><b>Baseline for all three experiments.</b> ${R.baselineNote}</div>`;
 
     html += R.experiments.map(e => {
       const q2 = JSON.parse(JSON.stringify(D2));
