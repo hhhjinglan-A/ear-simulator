@@ -5,7 +5,7 @@ MUE 610 Psychoacoustics — AI Build Lab · **JINGLAN HUANG**
 > [!IMPORTANT]
 > ## ⬇︎ Start here: [**REPORT.pdf**](REPORT.pdf)
 >
-> That one file is the whole submission — 13 pages, all five figures embedded,
+> That one file is the whole submission — 12 pages, all five figures embedded,
 > every deliverable answered. **Nothing else in this repository has to be opened.**
 > The folders below are the source code the report was produced from; they are
 > here so the work can be checked, not because they need reading.
@@ -313,10 +313,13 @@ velocity from the canal, i.e. `|z_t| ≫ Z_canal`. Measured against the canal's
 characteristic impedance ρc/A = 9.35e6 Pa·s/m³, the ratio is **median 8.9,
 minimum 3.49**. So:
 
-1. **The cascade is approximate near the middle-ear resonance.** The ratio is
-   lowest around 1–2 kHz, where the middle ear absorbs most power and does load
-   the canal, damping and detuning its resonance. `C.loadingRatio` reports this
-   per frequency; nothing corrects for it.
+1. **The cascade is approximate, and worst at the top of the band.** The ratio
+   first drops below 5 at 1544 Hz and dips to **4.56 at 1738 Hz**, near the
+   middle-ear resonance, where the middle ear absorbs most power and does load the
+   canal, damping and detuning its resonance. It recovers to about 6 at 4 kHz and
+   then falls steadily to its **overall minimum 3.49 at 20 kHz** — so the worst
+   loading is at the top of the band, not at the resonance. `C.loadingRatio`
+   reports this per frequency; nothing corrects for it.
 2. **Lumped elements cannot describe the ear above ~3 kHz.** The circuit assumes
    one pressure and one volume velocity per node; the real tympanic membrane
    breaks into modes above roughly 3 kHz. The paper itself notes (p. 1511) that

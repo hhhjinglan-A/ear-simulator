@@ -77,13 +77,14 @@ directly to V_c/(ρc²) — correctly, since the cavity sits on the eardrum side
 <p><code>H_total = H_outer × H_middle</code> is only valid if the middle ear draws negligible
 volume velocity from the ear canal, i.e. <code>|z_t| ≫ Z_canal</code>. Against the canal's
 characteristic impedance ρc/A ≈ 9.35e6 Pas/m³ the measured ratio is
-<b>median ≈ 8.9, minimum ≈ 3.5</b> — not the ≫ that the product assumes.
+<b>median ≈ 8.9, minimum 3.49 at 20 kHz</b> — not the ≫ that the product assumes.
 The live value is plotted on the Simulator tab and recomputed as you move the sliders.</p>
 
 <h2>Three real limitations</h2>
 <ol>
-<li><b>The cascade is approximate near the middle-ear resonance.</b> Around 1–2 kHz the middle ear
-absorbs most power and does load the canal, damping and detuning its resonance. Nothing here corrects for it.</li>
+<li><b>The cascade is approximate, and worst at the top of the band.</b> The ratio dips to
+4.56 at 1738 Hz, near the middle-ear resonance, where the middle ear absorbs most power and does
+load the canal; but its true minimum is 3.49 at 20 kHz. Nothing here corrects for it.</li>
 <li><b>Lumped elements cannot describe the ear above ~3 kHz.</b> The circuit assumes one pressure and
 one volume velocity per node; the real tympanic membrane breaks into modes above roughly 3 kHz. The paper
 itself notes (p. 1511) that above 2.5 kHz the incudomalleal joint introduces a phase angle it treats as stiff.</li>
