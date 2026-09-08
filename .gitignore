@@ -16,3 +16,6 @@ codegen/
 # Local exports
 combined_ear_response.csv
 combined_ear_plot.png
+
+# Build artefact for upload-based submission; the repo itself is the source.
+code.zip
